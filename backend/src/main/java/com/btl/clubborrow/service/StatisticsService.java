@@ -36,7 +36,7 @@ public class StatisticsService {
         }
 
         return DashboardStats.builder()
-                .totalEquipment(equipmentRepository.count())
+                .totalEquipment(equipmentRepository.sumTotalQuantity())
                 .totalBorrowing(borrowRequestRepository.countByStatus(BorrowStatus.APPROVED))
                 .totalPending(borrowRequestRepository.countByStatus(BorrowStatus.PENDING))
                 .totalOverdue(borrowRequestRepository.countByStatus(BorrowStatus.OVERDUE))

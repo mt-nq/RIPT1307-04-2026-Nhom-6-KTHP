@@ -21,7 +21,7 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      title: 'Tổng thiết bị',
+      title: 'Tổng số lượng hiện có',
       value: stats?.totalEquipment || 0,
       icon: <InboxOutlined />,
       bg: 'linear-gradient(135deg, #6366f1, #4f46e5)',

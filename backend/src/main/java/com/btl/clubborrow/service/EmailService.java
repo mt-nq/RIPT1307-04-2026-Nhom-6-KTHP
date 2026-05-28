@@ -88,7 +88,7 @@ public class EmailService {
             helper.setText(content, true);
             mailSender.send(message);
             log.info("Email sent to: {}", to);
-        } catch (MessagingException | java.io.UnsupportedEncodingException e) {
+        } catch (Exception e) {
             log.error("Failed to send email to {}: {}", to, e.getMessage());
         }
     }

@@ -35,7 +35,7 @@ export default function NotificationBell({ unreadCount }: Props) {
         <Empty description="Chưa có thông báo nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
         <List
-          dataSource={notifications.slice(0, 10)}
+          dataSource={notifications}
           renderItem={(item: NotificationItem) => (
             <div
               className={`notification-item ${!item.isRead ? 'unread' : ''}`}

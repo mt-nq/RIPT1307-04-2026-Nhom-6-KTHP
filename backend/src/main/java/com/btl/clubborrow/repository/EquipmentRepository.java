@@ -10,4 +10,7 @@ import java.util.List;
 public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     List<Equipment> findByActiveTrue();
     List<Equipment> findByActiveTrueAndNameContainingIgnoreCase(String name);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(e.totalQuantity), 0) FROM Equipment e WHERE e.active = true")
+    long sumTotalQuantity();
 }
