@@ -156,7 +156,6 @@ export default function HistoryPage() {
           columns={columns}
           dataSource={filtered}
           rowKey="id"
-          pagination={{ pageSize: 10, showTotal: (total) => `Tổng ${total} yêu cầu` }}
           scroll={{ x: 700 }}
           style={{ background: '#fff', borderRadius: 16 }}
         />
