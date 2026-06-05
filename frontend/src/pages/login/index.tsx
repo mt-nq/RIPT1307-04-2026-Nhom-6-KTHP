@@ -47,186 +47,94 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-logo">
-          <div className="auth-logo-icon">
-            <img
-              src="https://tse3.mm.bing.net/th/id/OIP.RjZcMPjW1gO4lp8xOM66IgHaHa?cb=thfvnextfalcon&rs=1&pid=ImgDetMain&o=7&rm=3"
-              alt="Logo"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                borderRadius: '50%',
-              }}
-            />
-          </div>
-          <h1>CLB Borrow</h1>
-          <p>Hệ thống quản lý mượn đồ dùng</p>
-        </div>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundImage: 'linear-gradient(to top, rgba(0, 0, 0, 0.8) 0, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0.8) 100%), url(https://assets.nflxext.com/ffe/siteui/vlv3/c3ed7e68-a3ed-43d8-8e1b-ccc7c5e2fd9a/99863a35-18e3-4d43-9828-569d65942d99/VN-vi-20231211-popsignuptwoweeks-perspective_alpha_website_large.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}>
+      <header style={{ padding: '20px 4%' }}>
+        <h1 style={{ color: '#e50914', fontSize: '2.5rem', fontWeight: 900, margin: 0, userSelect: 'none' }}>
+          GEARFLIX
+        </h1>
+      </header>
 
-        {isRegister ? (
-          <>
-            <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#1f2937' }}>Đăng Ký Sinh Viên</h2>
-              <p style={{ color: '#6b7280', fontSize: 13, marginTop: 4 }}>
-                Tạo tài khoản để đăng ký mượn thiết bị CLB
-              </p>
-            </div>
-
-            <Form
-              layout="vertical"
-              onFinish={handleRegister}
-              size="large"
-            >
-              <Form.Item
-                name="name"
-                label="Họ và tên"
-                rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
-              >
-                <Input
-                  prefix={<UserOutlined style={{ color: '#6366f1' }} />}
-                  placeholder="Nhập họ và tên sinh viên"
-                  style={{ borderRadius: 10 }}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="studentId"
-                label="Mã số sinh viên (MSSV)"
-                rules={[{ required: true, message: 'Vui lòng nhập mã số sinh viên' }]}
-              >
-                <Input
-                  prefix={<IdcardOutlined style={{ color: '#6366f1' }} />}
-                  placeholder="Nhập mã số sinh viên"
-                  style={{ borderRadius: 10 }}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập email' },
-                  { type: 'email', message: 'Email không hợp lệ' },
-                ]}
-              >
-                <Input
-                  prefix={<MailOutlined style={{ color: '#6366f1' }} />}
-                  placeholder="Nhập email sinh viên"
-                  style={{ borderRadius: 10 }}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="password"
-                label="Mật khẩu"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập mật khẩu' },
-                  { min: 6, message: 'Mật khẩu phải chứa ít nhất 6 ký tự' },
-                ]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined style={{ color: '#6366f1' }} />}
-                  placeholder="Nhập mật khẩu"
-                  style={{ borderRadius: 10 }}
-                />
-              </Form.Item>
-
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={isRegisterLoading}
-                block
-                size="large"
-                style={{ height: 50, borderRadius: 12, fontSize: 16, fontWeight: 700, marginTop: 8 }}
-              >
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
+        <div style={{
+          background: 'rgba(0, 0, 0, 0.75)',
+          padding: '60px 68px 40px',
+          borderRadius: '4px',
+          width: '100%',
+          maxWidth: '450px',
+          minHeight: '500px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+        }}>
+          {isRegister ? (
+            <>
+              <h2 style={{ color: 'white', fontSize: '32px', fontWeight: 700, marginBottom: '28px' }}>
                 Đăng Ký
-              </Button>
-            </Form>
-
-            <div style={{ textAlign: 'center', marginTop: 20 }}>
-              <Button
-                type="link"
-                icon={<ArrowLeftOutlined />}
-                onClick={() => setIsRegister(false)}
-                style={{ color: '#6366f1', fontWeight: 600 }}
-              >
-                Quay lại Đăng nhập
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <Tabs
-              centered
-              activeKey={activeRole}
-              onChange={(key) => setActiveRole(key as 'student' | 'admin')}
-              items={[
-                { key: 'student', label: '👨‍🎓 Sinh Viên' },
-                { key: 'admin', label: '🛠️ Quản Trị Viên' },
-              ]}
-              style={{ marginBottom: 8 }}
-            />
-
-            <Form
-              layout="vertical"
-              onFinish={handleLogin}
-              size="large"
-              key={activeRole}
-            >
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập email' },
-                  { type: 'email', message: 'Email không hợp lệ' },
-                ]}
-              >
-                <Input
-                  prefix={<UserOutlined style={{ color: '#6366f1' }} />}
-                  placeholder="Nhập email của bạn"
-                  style={{ borderRadius: 10 }}
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="password"
-                label="Mật khẩu"
-                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
-              >
-                <Input.Password
-                  prefix={<LockOutlined style={{ color: '#6366f1' }} />}
-                  placeholder="Nhập mật khẩu"
-                  style={{ borderRadius: 10 }}
-                />
-              </Form.Item>
-
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={isLoading}
-                block
-                size="large"
-                style={{ height: 50, borderRadius: 12, fontSize: 16, fontWeight: 700, marginTop: 8 }}
-              >
+              </h2>
+              <Form layout="vertical" onFinish={handleRegister} size="large">
+                <Form.Item name="name" rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}>
+                  <Input prefix={<UserOutlined style={{ color: '#8c8c8c' }} />} placeholder="Họ và tên" style={{ background: '#333', border: 'none', color: 'white', height: '50px' }} />
+                </Form.Item>
+                <Form.Item name="studentId" rules={[{ required: true, message: 'Vui lòng nhập MSSV' }]}>
+                  <Input prefix={<IdcardOutlined style={{ color: '#8c8c8c' }} />} placeholder="Mã số sinh viên" style={{ background: '#333', border: 'none', color: 'white', height: '50px' }} />
+                </Form.Item>
+                <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
+                  <Input prefix={<MailOutlined style={{ color: '#8c8c8c' }} />} placeholder="Email" style={{ background: '#333', border: 'none', color: 'white', height: '50px' }} />
+                </Form.Item>
+                <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }, { min: 6, message: 'Mật khẩu phải chứa ít nhất 6 ký tự' }]}>
+                  <Input.Password prefix={<LockOutlined style={{ color: '#8c8c8c' }} />} placeholder="Mật khẩu" style={{ background: '#333', border: 'none', color: 'white', height: '50px' }} />
+                </Form.Item>
+                <Button type="primary" htmlType="submit" loading={isRegisterLoading} block style={{ height: '50px', fontSize: '16px', fontWeight: 'bold', background: '#e50914', border: 'none', marginTop: '16px' }}>
+                  Đăng Ký
+                </Button>
+              </Form>
+              <div style={{ marginTop: '30px', color: '#737373', fontSize: '16px' }}>
+                Đã có tài khoản?{' '}
+                <span onClick={() => setIsRegister(false)} style={{ color: 'white', cursor: 'pointer' }}>Đăng nhập ngay.</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 style={{ color: 'white', fontSize: '32px', fontWeight: 700, marginBottom: '28px' }}>
                 Đăng Nhập
-              </Button>
-            </Form>
+              </h2>
+              
+              <Tabs
+                activeKey={activeRole}
+                onChange={(key) => setActiveRole(key as 'student' | 'admin')}
+                items={[
+                  { key: 'student', label: <span style={{ color: activeRole === 'student' ? 'white' : '#737373' }}>Sinh Viên</span> },
+                  { key: 'admin', label: <span style={{ color: activeRole === 'admin' ? 'white' : '#737373' }}>Quản Trị</span> },
+                ]}
+                tabBarStyle={{ borderBottom: 'none', marginBottom: '24px' }}
+              />
 
-            <div style={{ textAlign: 'center', marginTop: 20 }}>
-              <span style={{ color: '#6b7280', fontSize: 14 }}>Chưa có tài khoản sinh viên? </span>
-              <Button
-                type="link"
-                onClick={() => setIsRegister(true)}
-                style={{ color: '#6366f1', padding: 0, fontWeight: 600, fontSize: 14 }}
-              >
-                Đăng ký ngay
-              </Button>
-            </div>
-          </>
-        )}
+              <Form layout="vertical" onFinish={handleLogin} size="large" key={activeRole}>
+                <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
+                  <Input prefix={<UserOutlined style={{ color: '#8c8c8c' }} />} placeholder="Email hoặc số điện thoại" style={{ background: '#333', border: 'none', color: 'white', height: '50px' }} />
+                </Form.Item>
+                <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
+                  <Input.Password prefix={<LockOutlined style={{ color: '#8c8c8c' }} />} placeholder="Mật khẩu" style={{ background: '#333', border: 'none', color: 'white', height: '50px' }} />
+                </Form.Item>
+                <Button type="primary" htmlType="submit" loading={isLoading} block style={{ height: '50px', fontSize: '16px', fontWeight: 'bold', background: '#e50914', border: 'none', marginTop: '16px' }}>
+                  Đăng Nhập
+                </Button>
+              </Form>
+              
+              {activeRole === 'student' && (
+                <div style={{ marginTop: '50px', color: '#737373', fontSize: '16px' }}>
+                  Bạn mới tham gia CLB?{' '}
+                  <span onClick={() => setIsRegister(true)} style={{ color: 'white', cursor: 'pointer' }}>Đăng ký ngay.</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
