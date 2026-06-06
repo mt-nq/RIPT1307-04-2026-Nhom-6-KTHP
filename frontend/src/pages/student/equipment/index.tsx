@@ -1,156 +1,207 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Spin, Empty } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useGetEquipmentQuery } from '@/store/api/equipmentApi';
 import { Equipment } from '@/types';
 
+/* ── Star rating display ── */
+const Stars = ({ count = 4 }: { count?: number }) => (
+  <span style={{ display: 'inline-flex', gap: 1 }}>
+    {[1, 2, 3, 4, 5].map(i => (
+      <i key={i} className={`fa-${i <= count ? 'solid' : 'regular'} fa-star`}
+        style={{ fontSize: 9, color: i <= count ? '#f59e0b' : '#374151' }} />
+    ))}
+  </span>
+);
+
 export default function StudentEquipmentPage() {
   const navigate = useNavigate();
   const [detailItem, setDetailItem] = useState<Equipment | null>(null);
-
   const { data, isLoading } = useGetEquipmentQuery({ search: '' });
   const equipmentList = data?.data || [];
 
-  // Logic to create Netflix-like structure
-  const featuredItem = useMemo(() => {
-    if (equipmentList.length > 0) {
-      return equipmentList.find(e => e.availableQuantity > 0) || equipmentList[0];
-    }
-    return null;
-  }, [equipmentList]);
-
   const rows = useMemo(() => {
-    if (equipmentList.length === 0) return [];
-    
+    if (!equipmentList.length) return [];
     const available = equipmentList.filter(e => e.availableQuantity > 0);
     const newest = [...equipmentList].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    const almostEmpty = equipmentList.filter(e => e.availableQuantity === 0);
-
+    const outOfStock = equipmentList.filter(e => e.availableQuantity === 0);
     return [
       { title: 'Thiết bị sẵn sàng cho mượn', items: available },
-      { title: 'Tất cả tài sản CLB', items: equipmentList },
-      { title: 'Thiết bị mới nhập', items: newest },
-      { title: 'Đang mượn hết', items: almostEmpty }
-    ].filter(row => row.items.length > 0);
+      { title: 'Tất cả tài sản CLB',           items: equipmentList },
+      { title: 'Thiết bị mới nhập',             items: newest },
+      { title: 'Đang mượn hết',                 items: outOfStock },
+    ].filter(r => r.items.length > 0);
   }, [equipmentList]);
 
-  if (isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <Spin size="large" />
-      </div>
-    );
-  }
+  if (isLoading) return (
+    <div style={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Spin size="large" />
+    </div>
+  );
 
-  if (equipmentList.length === 0) {
-    return (
-      <div className="h-[60vh] flex items-center justify-center">
-        <Empty description={<span className="text-gray-400">Chưa có thiết bị nào trong kho</span>} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-      </div>
-    );
-  }
+  if (!equipmentList.length) return (
+    <div style={{ height: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Empty description={<span style={{ color: '#6b7280' }}>Chưa có thiết bị nào trong kho</span>} image={Empty.PRESENTED_IMAGE_SIMPLE} />
+    </div>
+  );
 
   return (
     <>
-      {/* Cinematic Billboard (Banner chính) */}
-      {featuredItem && (
-        <div className="relative w-full h-[60vh] md:h-[70vh] flex items-center px-6 md:px-12 mb-10 overflow-hidden bg-gradient-to-r from-black via-black/80 to-transparent">
-          {/* Ảnh nền */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center -z-20 opacity-50" 
-            style={{ 
-              backgroundImage: featuredItem.imageUrl 
-                ? `url(${featuredItem.imageUrl})` 
-                : 'url(https://assets.nflxext.com/ffe/siteui/vlv3/c3ed7e68-a3ed-43d8-8e1b-ccc7c5e2fd9a/99863a35-18e3-4d43-9828-569d65942d99/VN-vi-20231211-popsignuptwoweeks-perspective_alpha_website_large.jpg)' 
+      {/* ══════════════════════════════════════════
+          HERO SECTION
+          ══════════════════════════════════════════ */}
+      <div style={{ position: 'relative', width: '100%', height: '70vh', overflow: 'hidden', background: '#0d0d0d' }}>
+        <div style={{ position: 'absolute', inset: 0, animation: 'fadeIn 0.5s ease-in-out' }}>
+          <img
+            src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1920&auto=format&fit=crop"
+            alt="Hero Background"
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center right',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.05) 15%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,1) 100%)',
+              maskImage:        'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.05) 15%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,1) 100%)',
             }}
-          ></div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#1a0507] via-[#0c0c0c]/80 to-transparent -z-10"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-transparent via-black/40 to-black -z-10"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0c0c0c] to-transparent -z-10"></div>
-          
-          <div className="max-w-2xl space-y-4">
-            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1 rounded-full text-[11px] font-bold tracking-widest text-amber-400 uppercase">
-              <i className="fa-solid fa-star-of-life animate-spin text-xs"></i> Thiết bị tâm điểm
-            </div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-none text-white drop-shadow-xl">
-              {featuredItem.name}
+          />
+        </div>
+        <style>{`
+          @keyframes fadeIn { from { opacity: 0.4; } to { opacity: 1; } }
+        `}</style>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, #0d0d0d 35%, rgba(13,13,13,0.5) 60%, rgba(13,13,13,0) 100%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 180, background: 'linear-gradient(to top, #141414 0%, transparent 100%)', pointerEvents: 'none' }} />
+
+        <div style={{
+          position: 'relative', zIndex: 10,
+          height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          padding: '0 80px 60px',
+          pointerEvents: 'none',
+        }}>
+          <div style={{ pointerEvents: 'auto', maxWidth: 640 }}>
+            <h1 style={{
+              fontSize: 'clamp(2.5rem, 5vw, 3.8rem)',
+              fontWeight: 900, color: '#fff',
+              margin: '0 0 12px', lineHeight: 1.1,
+              letterSpacing: '-1.5px',
+              textShadow: '0 4px 30px rgba(0,0,0,0.8)',
+            }}>
+              Chào mừng đến với CLB BORROW
             </h1>
-            <p className="text-sm md:text-base text-gray-400 font-medium leading-relaxed line-clamp-3">
-              {featuredItem.description || 'Được mệnh danh là "ông vua tiệc tùng" của các Câu lạc bộ. Hệ thống đèn LED nhảy theo nhạc, công suất khuếch đại đỉnh cao, thách thức mọi không gian ngoài trời rộng lớn nhất.'}
+            <p style={{
+              fontSize: 16, color: '#d1d5db', lineHeight: 1.6,
+              margin: '0 0 24px', maxWidth: 540,
+              textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+            }}>
+              Nền tảng quản lý và chia sẻ thiết bị nội bộ dành riêng cho các thành viên trong câu lạc bộ.
+              Tại đây, bạn có thể dễ dàng tìm kiếm, đăng ký mượn các trang thiết bị cần thiết cho học tập,
+              nghiên cứu và tổ chức sự kiện một cách nhanh chóng và thuận tiện nhất.
             </p>
-            <div className="flex gap-4 pt-4">
-              <button 
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
                 onClick={() => {
-                  if(featuredItem.availableQuantity > 0) {
-                     navigate('/student/borrow', { state: { equipmentId: featuredItem.id } });
-                  }
-                }} 
-                disabled={featuredItem.availableQuantity === 0}
-                className={`glow-button px-8 py-3 rounded-md font-black text-sm flex items-center gap-2 transition ${featuredItem.availableQuantity === 0 ? 'bg-gray-600 text-gray-400 cursor-not-allowed glow-none' : 'bg-[#e50914] text-white cursor-pointer'}`}
+                  const rowsContainer = document.getElementById('equipment-rows');
+                  if (rowsContainer) rowsContainer.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="btn-primary"
+                style={{
+                  padding: '12px 24px', borderRadius: 8,
+                  fontSize: 14, fontWeight: 800, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                }}
               >
-                <i className="fa-solid fa-paper-plane"></i> {featuredItem.availableQuantity > 0 ? 'ĐĂNG KÝ MƯỢN NGAY' : 'TẠM HẾT HÀNG'}
-              </button>
-              <button 
-                onClick={() => setDetailItem(featuredItem)}
-                className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-md font-bold text-sm flex items-center gap-2 transition backdrop-blur-md border border-white/10 cursor-pointer"
-              >
-                <i className="fa-solid fa-circle-info"></i> Thông tin thiết bị
+                <i className="fa-solid fa-compass" />
+                Khám phá thiết bị ngay
               </button>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Danh mục thiết bị dạng hàng (Netflix Layout) */}
-      <div className="px-6 md:px-12 space-y-12">
-        {rows.map((row, index) => (
-          <div key={index} className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg md:text-2xl font-black tracking-wide text-white group cursor-pointer">
-                {row.title}
-                <span className="text-xs text-[#e50914] font-bold opacity-0 group-hover:opacity-100 transition pl-2">Xem tất cả →</span>
-              </h2>
-            </div>
-            
-            <div className="flex gap-6 overflow-x-auto pb-6 netflix-scroll pt-2">
+      {/* ══════════════════════════════════════════
+          EQUIPMENT ROWS
+          ══════════════════════════════════════════ */}
+      <div id="equipment-rows" style={{ padding: '0 28px 60px', marginTop: -20, position: 'relative', zIndex: 10 }}>
+        {rows.map((row, rowIdx) => (
+          <div key={rowIdx} style={{ marginBottom: 44 }}>
+            {/* Row title */}
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: '#e5e7eb', margin: '0 0 14px', cursor: 'default' }}>
+              {row.title}
+            </h2>
+
+            {/* Cards scroll */}
+            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingTop: 16, paddingBottom: 24, marginTop: -16, marginBottom: -16 }} className="netflix-scroll">
               {row.items.map(eq => {
-                const isAvailable = eq.availableQuantity > 0;
+                const isAvail = eq.availableQuantity > 0;
                 return (
-                  <div key={eq.id} className={`movie-card min-w-[240px] md:min-w-[280px] bg-[#161616] rounded-xl overflow-hidden border border-white/5 relative flex flex-col justify-between ${!isAvailable ? 'opacity-50' : ''}`}>
-                    <div className={`h-40 ${eq.imageUrl ? '' : 'bg-gradient-to-b from-gray-900 to-[#161616]'} flex items-center justify-center text-4xl text-gray-500 relative`}>
+                  <div
+                    key={eq.id}
+                    className="movie-card"
+                    onClick={() => isAvail && setDetailItem(eq)}
+                    style={{
+                      minWidth: 260, width: 260, flexShrink: 0,
+                      background: '#1e1e1e', borderRadius: 8,
+                      overflow: 'hidden', cursor: isAvail ? 'pointer' : 'default',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      opacity: isAvail ? 1 : 0.55,
+                    }}
+                  >
+                    {/* Image + badge */}
+                    <div style={{ position: 'relative', height: 160, background: '#111', overflow: 'hidden' }}>
                       {eq.imageUrl ? (
-                        <img src={eq.imageUrl} alt={eq.name} className="w-full h-full object-cover" />
+                        <img src={eq.imageUrl} alt={eq.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                        <i className="fa-solid fa-lightbulb text-amber-500/20"></i>
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a' }}>
+                          <i className="fa-solid fa-box" style={{ color: '#333', fontSize: 28 }} />
+                        </div>
                       )}
-                      {isAvailable ? (
-                        <span className="absolute top-3 right-3 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                          Khả dụng
-                        </span>
-                      ) : (
-                        <span className="absolute top-3 right-3 bg-white/10 text-gray-400 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider border border-white/20">
-                          Hết hàng
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="p-4 space-y-3 bg-[#121212]">
-                      <h3 className="font-bold text-sm text-gray-100 truncate" title={eq.name}>{eq.name}</h3>
-                      <div className="flex justify-between text-xs text-gray-400 font-medium border-t border-white/5 pt-2">
-                        <span>📦 Sẵn có: <b className={isAvailable ? "text-white" : "text-gray-500"}>{eq.availableQuantity} chiếc</b></span>
-                        <span>⭐ Tình trạng: <b className="text-emerald-400">Tốt</b></span>
+                      {/* Status badge */}
+                      <div className={isAvail ? 'badge badge-avail' : 'badge badge-out'}
+                           style={{ position: 'absolute', top: 8, left: 8, backdropFilter: 'blur(4px)' }}>
+                        <i className={`fa-solid fa-${isAvail ? 'check' : 'xmark'}`} style={{ fontSize: 8 }} />
+                        {isAvail ? 'Khả dụng' : 'Hết hàng'}
                       </div>
-                      <button 
-                        onClick={() => isAvailable ? setDetailItem(eq) : null}
-                        disabled={!isAvailable}
-                        className={`w-full py-2 rounded-lg text-xs font-black transition duration-300 border ${
-                          isAvailable 
-                          ? 'bg-white/5 hover:bg-[#e50914] text-white hover:text-white border-white/10 hover:border-transparent cursor-pointer' 
-                          : 'bg-transparent text-gray-600 border-white/5 cursor-not-allowed'
-                        }`}
-                      >
-                        {isAvailable ? 'Yêu cầu cấp đồ' : 'Đang cho mượn hết'}
-                      </button>
+                    </div>
+
+                    {/* Card body */}
+                    <div style={{ padding: '10px 10px 12px' }}>
+                      {/* Name */}
+                      <div style={{
+                        fontSize: 14, fontWeight: 800, color: '#f3f4f6',
+                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        marginBottom: 4,
+                      }} title={eq.name}>{eq.name}</div>
+
+                      {/* Description */}
+                      <div style={{
+                        fontSize: 12, color: '#6b7280', lineHeight: 1.5, marginBottom: 8,
+                        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                        minHeight: 36,
+                      }}>
+                        {eq.description || 'Không có mô tả'}
+                      </div>
+
+                      {/* Count + stars */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <span style={{ fontSize: 12, color: '#6b7280' }}>
+                          Số lượng còn: <span style={{ color: isAvail ? '#10b981' : '#6b7280', fontWeight: 700 }}>{eq.availableQuantity}</span>
+                        </span>
+                        <Stars count={eq.availableQuantity > 0 ? 4 : 2} />
+                      </div>
+
+                      {/* Button */}
+                      {isAvail && (
+                        <button
+                          onClick={e => { e.stopPropagation(); navigate('/student/borrow', { state: { equipmentId: eq.id } }); }}
+                          className="btn-primary"
+                          style={{
+                            width: '100%', padding: '8px 0', borderRadius: 5,
+                            fontSize: 12, cursor: 'pointer',
+                            letterSpacing: '0.06em', textTransform: 'uppercase',
+                          }}
+                        >
+                          Mượn →
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -160,59 +211,71 @@ export default function StudentEquipmentPage() {
         ))}
       </div>
 
-      {/* PREMIUM POPUP MODAL (Chi tiết và Xác nhận Mượn) */}
+      {/* ══════════════════════════════════════════
+          DETAIL MODAL
+          ══════════════════════════════════════════ */}
       {detailItem && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-[#141414] rounded-2xl border border-white/10 shadow-2xl w-full max-w-lg overflow-hidden transform transition-all">
-            <div className="bg-[#1c1c1c] p-4 flex justify-between items-center border-b border-white/5">
-              <h3 className="font-black text-xs uppercase tracking-widest text-white flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#e50914] animate-ping"></span> 
-                Xác nhận mượn thiết bị
-              </h3>
-              <button onClick={() => setDetailItem(null)} className="text-gray-400 hover:text-white text-xl font-bold transition cursor-pointer">&times;</button>
-            </div>
-            <div className="p-6 space-y-5">
-              
-              <div className="flex gap-4">
-                {detailItem.imageUrl ? (
-                  <img src={detailItem.imageUrl} alt={detailItem.name} className="w-24 h-24 object-cover rounded-lg border border-white/10" />
-                ) : (
-                  <div className="w-24 h-24 bg-gray-900 rounded-lg border border-white/10 flex items-center justify-center text-3xl text-gray-600">
-                    <i className="fa-solid fa-camera"></i>
-                  </div>
-                )}
-                <div>
-                  <h4 className="text-lg font-black text-white leading-tight">{detailItem.name}</h4>
-                  <p className="text-xs text-gray-400 mt-1 line-clamp-3">{detailItem.description || 'Không có mô tả chi tiết.'}</p>
-                  <div className="flex gap-3 mt-3">
-                    <span className="bg-white/10 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded border border-white/5">
-                      Tổng kho: {detailItem.totalQuantity}
-                    </span>
-                    <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/20">
-                      Sẵn có: {detailItem.availableQuantity}
-                    </span>
-                  </div>
+        <div
+          onClick={() => setDetailItem(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 2000,
+            background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+          }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{
+            background: '#1e1e1e', borderRadius: 12, overflow: 'hidden',
+            width: '100%', maxWidth: 480,
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.9)',
+          }}>
+            {/* Image */}
+            <div style={{ position: 'relative', height: 220, background: '#111' }}>
+              {detailItem.imageUrl ? (
+                <img src={detailItem.imageUrl} alt={detailItem.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a' }}>
+                  <i className="fa-solid fa-box" style={{ color: '#333', fontSize: 40 }} />
                 </div>
+              )}
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #1e1e1e 0%, rgba(30,30,30,0.3) 60%, transparent 100%)' }} />
+              <button onClick={() => setDetailItem(null)} style={{
+                position: 'absolute', top: 12, right: 12, width: 32, height: 32,
+                borderRadius: '50%', background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.15)',
+                color: '#fff', fontSize: 16, fontWeight: 900, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'background 0.2s',
+              }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
+                 onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.65)'}
+              >×</button>
+            </div>
+            {/* Body */}
+            <div style={{ padding: '4px 24px 24px' }}>
+              <h3 style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: '0 0 6px' }}>{detailItem.name}</h3>
+              <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.6, margin: '0 0 16px' }}>
+                {detailItem.description || 'Không có mô tả chi tiết.'}
+              </p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 18 }}>
+                <span style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 6 }}>
+                  Kho: {detailItem.totalQuantity} chiếc
+                </span>
+                <span style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#10b981', fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 6 }}>
+                  Còn: {detailItem.availableQuantity} chiếc
+                </span>
               </div>
-
-              <div className="bg-white/5 rounded-lg p-4 border border-white/5">
-                <p className="text-[11px] text-gray-400 leading-relaxed">
-                  Bằng việc bấm nút "Đăng Ký", bạn sẽ được chuyển đến trang Tạo Phiếu Mượn cho tài sản này. Vui lòng chuẩn bị rõ kế hoạch và mục đích sử dụng để Quản trị viên duyệt nhanh chóng.
-                </p>
-              </div>
-
-              <div className="flex gap-3 justify-end pt-2 border-t border-white/5">
-                <button onClick={() => setDetailItem(null)} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-gray-300 rounded-md text-xs font-bold transition cursor-pointer">
-                  Hủy bỏ
-                </button>
-                <button 
-                  onClick={() => {
-                    navigate('/student/borrow', { state: { equipmentId: detailItem.id } });
-                    setDetailItem(null);
-                  }} 
-                  className="glow-button px-6 py-2 bg-[#e50914] text-white rounded-md text-xs font-black transition cursor-pointer"
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setDetailItem(null)} className="btn-ghost" style={{
+                  flex: 1, height: 44, borderRadius: 8, fontSize: 13,
+                }}>Hủy</button>
+                <button
+                  onClick={() => { navigate('/student/borrow', { state: { equipmentId: detailItem.id } }); setDetailItem(null); }}
+                  className="btn-primary"
+                  style={{
+                    flex: 2, height: 44, borderRadius: 8, fontSize: 13,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
                 >
-                  TIẾN HÀNH LẬP PHIẾU
+                  <i className="fa-solid fa-file-invoice" /> Đăng Ký Mượn
                 </button>
               </div>
             </div>

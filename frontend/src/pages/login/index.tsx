@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Form, Input, Button, message, Tabs } from 'antd';
-import { UserOutlined, LockOutlined, IdcardOutlined, MailOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { Form, Input, Button, message } from 'antd';
+import { UserOutlined, LockOutlined, IdcardOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useLoginMutation, useRegisterMutation } from '@/store/api/authApi';
@@ -21,11 +21,7 @@ export default function LoginPage() {
       if (res.success) {
         dispatch(loginSuccess({ token: res.data.token, user: res.data }));
         message.success(`Chào mừng, ${res.data.name}! 🎉`);
-        if (res.data.role === 'ADMIN') {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/student/equipment');
-        }
+        navigate(res.data.role === 'ADMIN' ? '/admin/dashboard' : '/student/equipment');
       }
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
@@ -46,187 +42,173 @@ export default function LoginPage() {
     }
   };
 
+  const inputStyle = {
+    height: 48,
+    background: 'rgba(255,255,255,0.06)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    borderRadius: 8,
+    color: '#fff',
+  };
+
   return (
     <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundImage: 'linear-gradient(to top, rgba(3, 7, 18, 0.9) 0%, rgba(3, 7, 18, 0.4) 60%, rgba(3, 7, 18, 0.9) 100%), url(https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
+      minHeight: '100vh', position: 'relative', overflow: 'hidden',
+      background: '#0d0d0d',
+      display: 'flex', flexDirection: 'column',
     }}>
+      {/* Background */}
+      <div style={{ position: 'absolute', inset: 0, background: '#0a0a0a' }} />
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'url(https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop)',
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        opacity: 0.6,
+      }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(15,12,41,0.8) 0%, rgba(48,43,99,0.4) 50%, rgba(36,36,62,0.8) 100%)' }} />
+
+      {/* Decorative animated orbs */}
+      <div style={{
+        position: 'absolute', top: '10%', left: '10%', width: '40vw', height: '40vw', maxWidth: 500, maxHeight: 500,
+        background: 'radial-gradient(circle, rgba(91, 92, 240,0.4) 0%, rgba(91, 92, 240,0) 70%)',
+        borderRadius: '50%', filter: 'blur(60px)',
+        animation: 'float 12s infinite ease-in-out', pointerEvents: 'none'
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '5%', right: '5%', width: '35vw', height: '35vw', maxWidth: 400, maxHeight: 400,
+        background: 'radial-gradient(circle, rgba(16,185,129,0.25) 0%, rgba(16,185,129,0) 70%)',
+        borderRadius: '50%', filter: 'blur(60px)',
+        animation: 'float 15s infinite ease-in-out reverse', pointerEvents: 'none'
+      }} />
+
       <style>{`
-        .premium-card {
-          background: rgba(13, 17, 28, 0.7) !important;
-          backdrop-filter: blur(20px) saturate(180%) !important;
-          -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-          border: 1px solid rgba(99, 102, 241, 0.15) !important;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 40px rgba(99, 102, 241, 0.08) !important;
-          transition: all 0.4s ease;
-        }
-        .premium-card:hover {
-          border-color: rgba(99, 102, 241, 0.3) !important;
-          box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 50px rgba(99, 102, 241, 0.18) !important;
-        }
-        .premium-input {
-          background: rgba(255, 255, 255, 0.03) !important;
-          border: 1px solid rgba(255, 255, 255, 0.08) !important;
-          border-radius: 8px !important;
-          transition: all 0.3s ease !important;
-        }
-        .premium-input:hover, .premium-input-focused, .premium-input:focus-within {
-          border-color: #6366f1 !important;
-          box-shadow: 0 0 10px rgba(99, 102, 241, 0.35) !important;
-          background: rgba(255, 255, 255, 0.06) !important;
-        }
-        .premium-input input {
-          color: white !important;
-          background: transparent !important;
-        }
-        .premium-input input::placeholder {
-          color: #6b7280 !important;
-        }
-        .premium-btn {
-          height: 52px !important;
-          font-size: 16px !important;
-          font-weight: 800 !important;
-          letter-spacing: 0.5px !important;
-          background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important;
-          border: none !important;
-          border-radius: 8px !important;
-          box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35) !important;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        }
-        .premium-btn:hover {
-          transform: translateY(-2px) !important;
-          box-shadow: 0 8px 25px rgba(99, 102, 241, 0.55) !important;
-          filter: brightness(1.1) !important;
-        }
-        .premium-btn:active {
-          transform: translateY(0) !important;
-        }
-        .role-tabs .ant-tabs-nav {
-          margin-bottom: 28px !important;
-        }
-        .role-tabs .ant-tabs-nav-list {
-          width: 100% !important;
-          justify-content: space-around !important;
-        }
-        .role-tabs .ant-tabs-tab {
-          font-weight: 700 !important;
-          font-size: 15px !important;
-          padding: 8px 0 !important;
-          margin: 0 !important;
-          transition: all 0.3s !important;
-        }
-        .role-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-          color: white !important;
-          text-shadow: 0 0 10px rgba(99, 102, 241, 0.3) !important;
-        }
-        .role-tabs .ant-tabs-ink-bar {
-          background: #6366f1 !important;
-          height: 3px !important;
-          border-radius: 2px !important;
-          box-shadow: 0 0 8px #6366f1 !important;
-        }
-        .logo-text {
-          font-family: 'Montserrat', 'Inter', sans-serif;
-          background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          text-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
-          user-select: none;
-        }
-        .sub-link {
-          color: #6b7280;
-          font-size: 15px;
-          transition: color 0.2s ease;
-        }
-        .sub-link span:hover {
-          color: white;
-          text-decoration: underline;
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
         }
       `}</style>
 
-      <header style={{ padding: '24px 5%' }}>
-        <h1 className="logo-text" style={{ fontSize: '2.4rem', fontWeight: 950, margin: 0, letterSpacing: '-1px' }}>
-          CLB BORROW
-        </h1>
-      </header>
+      {/* Navbar */}
+      <div style={{
+        position: 'relative', zIndex: 10,
+        padding: '20px 5%',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}>
+        <div style={{
+          width: 38, height: 38, borderRadius: 8,
+          background: 'linear-gradient(135deg,#5b5cf0,#4338ca)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 14px rgba(91, 92, 240,0.5)',
+        }}>
+          <i className="fa-solid fa-boxes-stacked" style={{ color: '#fff', fontSize: 16 }} />
+        </div>
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-0.3px' }}>CLB BORROW</div>
+          <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 600, marginTop: 1 }}>Kết nối & Sẻ chia</div>
+        </div>
+      </div>
 
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', pb: '40px' }}>
-        <div className="premium-card" style={{
-          padding: '50px 55px 40px',
-          borderRadius: '16px',
-          width: '100%',
-          maxWidth: '460px',
-          minHeight: '520px',
+      {/* Form */}
+      <div style={{
+        position: 'relative', zIndex: 10, flex: 1,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px',
+      }}>
+        <div style={{
+          width: '100%', maxWidth: 420,
+          background: 'rgba(18,18,18,0.92)',
+          backdropFilter: 'blur(24px)',
+          borderRadius: 12, padding: '36px 40px 32px',
+          border: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.75), 0 0 0 1px rgba(91, 92, 240,0.08)',
         }}>
           {isRegister ? (
             <>
-              <h2 style={{ color: 'white', fontSize: '32px', fontWeight: 800, marginBottom: '28px', letterSpacing: '-0.5px' }}>
-                Đăng Ký
-              </h2>
+              <div style={{ marginBottom: 28 }}>
+                <h2 style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.5px' }}>Đăng Ký</h2>
+                <p style={{ fontSize: 12, color: '#6b7280', margin: '6px 0 0' }}>Tạo tài khoản sinh viên để bắt đầu mượn thiết bị</p>
+              </div>
               <Form layout="vertical" onFinish={handleRegister} size="large">
                 <Form.Item name="name" rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}>
-                  <Input prefix={<UserOutlined style={{ color: '#8c8c8c' }} />} placeholder="Họ và tên" className="premium-input" style={{ height: '50px' }} />
+                  <Input prefix={<UserOutlined style={{ color: '#4b5563' }} />} placeholder="Họ và tên" style={inputStyle} />
                 </Form.Item>
                 <Form.Item name="studentId" rules={[{ required: true, message: 'Vui lòng nhập MSSV' }]}>
-                  <Input prefix={<IdcardOutlined style={{ color: '#8c8c8c' }} />} placeholder="Mã số sinh viên" className="premium-input" style={{ height: '50px' }} />
+                  <Input prefix={<IdcardOutlined style={{ color: '#4b5563' }} />} placeholder="Mã số sinh viên" style={inputStyle} />
                 </Form.Item>
                 <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
-                  <Input prefix={<MailOutlined style={{ color: '#8c8c8c' }} />} placeholder="Email" className="premium-input" style={{ height: '50px' }} />
+                  <Input prefix={<MailOutlined style={{ color: '#4b5563' }} />} placeholder="Email" style={inputStyle} />
                 </Form.Item>
-                <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }, { min: 6, message: 'Mật khẩu phải chứa ít nhất 6 ký tự' }]}>
-                  <Input.Password prefix={<LockOutlined style={{ color: '#8c8c8c' }} />} placeholder="Mật khẩu" className="premium-input" style={{ height: '50px' }} />
+                <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }, { min: 6, message: 'Tối thiểu 6 ký tự' }]}>
+                  <Input.Password prefix={<LockOutlined style={{ color: '#4b5563' }} />} placeholder="Mật khẩu" style={inputStyle} />
                 </Form.Item>
-                <Button type="primary" htmlType="submit" loading={isRegisterLoading} block className="premium-btn" style={{ marginTop: '16px' }}>
-                  Đăng Ký
+                <Button type="primary" htmlType="submit" loading={isRegisterLoading} block
+                  style={{ height: 50, borderRadius: 8, fontSize: 14, fontWeight: 800, background: 'linear-gradient(135deg,#5b5cf0,#4338ca)', border: 'none', boxShadow: '0 4px 18px rgba(91, 92, 240,0.45)', marginTop: 4 }}>
+                  Đăng Ký Tài Khoản
                 </Button>
               </Form>
-              <div className="sub-link" style={{ marginTop: '30px' }}>
+              <div style={{ marginTop: 24, fontSize: 13, color: '#6b7280', textAlign: 'center' }}>
                 Đã có tài khoản?{' '}
-                <span onClick={() => setIsRegister(false)} style={{ color: '#b3b3b3', cursor: 'pointer', fontWeight: 600 }}>Đăng nhập ngay.</span>
+                <span onClick={() => setIsRegister(false)} style={{ color: '#5b5cf0', cursor: 'pointer', fontWeight: 700 }}>
+                  Đăng nhập ngay
+                </span>
               </div>
             </>
           ) : (
             <>
-              <h2 style={{ color: 'white', fontSize: '32px', fontWeight: 800, marginBottom: '24px', letterSpacing: '-0.5px' }}>
-                Đăng Nhập
-              </h2>
-              
-              <Tabs
-                activeKey={activeRole}
-                onChange={(key) => setActiveRole(key as 'student' | 'admin')}
-                items={[
-                  { key: 'student', label: <span style={{ color: activeRole === 'student' ? 'white' : '#8c8c8c' }}>Sinh Viên</span> },
-                  { key: 'admin', label: <span style={{ color: activeRole === 'admin' ? 'white' : '#8c8c8c' }}>Quản Trị</span> },
-                ]}
-                tabBarStyle={{ borderBottom: 'none' }}
-                className="role-tabs"
-              />
+              <div style={{ marginBottom: 28 }}>
+                <h2 style={{ fontSize: 26, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '-0.5px' }}>Đăng Nhập</h2>
+                <p style={{ fontSize: 12, color: '#6b7280', margin: '6px 0 0' }}>Chào mừng trở lại CLB Borrow!</p>
+              </div>
+
+              {/* Role selector */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 24, background: 'rgba(255,255,255,0.04)', padding: 4, borderRadius: 8 }}>
+                {(['student', 'admin'] as const).map(role => (
+                  <button
+                    key={role}
+                    onClick={() => setActiveRole(role)}
+                    style={{
+                      flex: 1, height: 38, borderRadius: 6, cursor: 'pointer',
+                      border: 'none', fontSize: 12, fontWeight: 800,
+                      background: activeRole === role ? 'linear-gradient(135deg,#5b5cf0,#4338ca)' : 'transparent',
+                      color: activeRole === role ? '#fff' : '#6b7280',
+                      transition: 'all 0.2s',
+                      boxShadow: activeRole === role ? '0 2px 12px rgba(91, 92, 240,0.4)' : 'none',
+                    }}
+                  >
+                    {role === 'student' ? '🎓 Sinh Viên' : '🛡 Quản Trị'}
+                  </button>
+                ))}
+              </div>
 
               <Form layout="vertical" onFinish={handleLogin} size="large" key={activeRole}>
                 <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập email' }, { type: 'email', message: 'Email không hợp lệ' }]}>
-                  <Input prefix={<UserOutlined style={{ color: '#8c8c8c' }} />} placeholder="Email" className="premium-input" style={{ height: '50px' }} />
+                  <Input prefix={<UserOutlined style={{ color: '#4b5563' }} />} placeholder="Email" style={inputStyle} />
                 </Form.Item>
                 <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
-                  <Input.Password prefix={<LockOutlined style={{ color: '#8c8c8c' }} />} placeholder="Mật khẩu" className="premium-input" style={{ height: '50px' }} />
+                  <Input.Password prefix={<LockOutlined style={{ color: '#4b5563' }} />} placeholder="Mật khẩu" style={inputStyle} />
                 </Form.Item>
-                <Button type="primary" htmlType="submit" loading={isLoading} block className="premium-btn" style={{ marginTop: '16px' }}>
+                <Button type="primary" htmlType="submit" loading={isLoading} block
+                  style={{ height: 50, borderRadius: 8, fontSize: 14, fontWeight: 800, background: 'linear-gradient(135deg,#5b5cf0,#4338ca)', border: 'none', boxShadow: '0 4px 18px rgba(91, 92, 240,0.45)', marginTop: 4 }}>
                   Đăng Nhập
                 </Button>
               </Form>
-              
+
               {activeRole === 'student' && (
-                <div className="sub-link" style={{ marginTop: '40px' }}>
+                <div style={{ marginTop: 24, fontSize: 13, color: '#6b7280', textAlign: 'center' }}>
                   Bạn mới tham gia CLB?{' '}
-                  <span onClick={() => setIsRegister(true)} style={{ color: '#b3b3b3', cursor: 'pointer', fontWeight: 600 }}>Đăng ký ngay.</span>
+                  <span onClick={() => setIsRegister(true)} style={{ color: '#5b5cf0', cursor: 'pointer', fontWeight: 700 }}>
+                    Đăng ký ngay
+                  </span>
                 </div>
               )}
             </>
           )}
         </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '16px', color: '#374151', fontSize: 12 }}>
+        CLB Borrow Management System © 2025
       </div>
     </div>
   );
