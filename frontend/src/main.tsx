@@ -22,25 +22,25 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           theme={{
             algorithm: theme.darkAlgorithm,
             token: {
-              colorPrimary: '#e50914',
+              colorPrimary: '#6366f1',
               colorSuccess: '#10b981',
               colorWarning: '#f59e0b',
-              colorError: '#ef4444',
-              colorInfo: '#3b82f6',
+              colorError: '#f43f5e',
+              colorInfo: '#6366f1',
               borderRadius: 10,
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontSize: 14,
             },
             components: {
               Layout: {
-                siderBg: '#121212',
-                triggerBg: '#1a1a1a',
+                siderBg: '#0d111d',
+                triggerBg: '#161b2b',
                 bodyBg: 'transparent',
                 headerBg: 'transparent',
               },
               Menu: {
-                darkItemBg: '#121212',
-                darkItemSelectedBg: 'rgba(229,9,20,0.15)',
+                darkItemBg: '#0d111d',
+                darkItemSelectedBg: 'rgba(99,102,241,0.15)',
                 darkItemHoverBg: 'rgba(255,255,255,0.05)',
               },
             },
