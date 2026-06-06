@@ -85,7 +85,7 @@ export default function AdminRequestsPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/10 pb-6 mb-8 gap-6">
         <div>
           <h1 className="text-[28px] font-black tracking-tight text-white flex items-center gap-3 m-0">
-            <i className="fa-solid fa-folder-open text-[#e50914]"></i> HỆ THỐNG PHÊ DUYỆT PHIẾU
+            <i className="fa-solid fa-folder-open text-[#5b5cf0]"></i> HỆ THỐNG PHÊ DUYỆT PHIẾU
           </h1>
           <p className="text-sm text-gray-500 mt-2 m-0">Nơi xử lý luồng tiếp nhận đồ dùng từ sinh viên.</p>
         </div>
@@ -93,19 +93,19 @@ export default function AdminRequestsPage() {
         <div className="flex bg-[#121212] p-1 rounded-lg border border-white/5 text-xs font-bold text-gray-400">
           <button 
             onClick={() => setActiveTab('PENDING')} 
-            className={`px-5 py-2 rounded-md transition cursor-pointer ${activeTab === 'PENDING' ? 'bg-[#e50914] text-white shadow-lg glow-button' : 'hover:text-white hover:bg-white/5'}`}
+            className={`px-5 py-2 rounded-md transition cursor-pointer ${activeTab === 'PENDING' ? 'bg-[#5b5cf0] text-white shadow-[0_4px_18px_rgba(91,92,240,0.4)]' : 'hover:text-white hover:bg-white/5'}`}
           >
             Chờ duyệt ({tabCounts.PENDING})
           </button>
           <button 
             onClick={() => setActiveTab('APPROVED')} 
-            className={`px-5 py-2 rounded-md transition cursor-pointer ${activeTab === 'APPROVED' ? 'bg-[#e50914] text-white shadow-lg glow-button' : 'hover:text-white hover:bg-white/5'}`}
+            className={`px-5 py-2 rounded-md transition cursor-pointer ${activeTab === 'APPROVED' ? 'bg-[#5b5cf0] text-white shadow-[0_4px_18px_rgba(91,92,240,0.4)]' : 'hover:text-white hover:bg-white/5'}`}
           >
             Đang mượn ({tabCounts.APPROVED})
           </button>
           <button 
             onClick={() => setActiveTab('OVERDUE')} 
-            className={`px-5 py-2 rounded-md transition cursor-pointer ${activeTab === 'OVERDUE' ? 'bg-[#e50914] text-white shadow-lg glow-button' : 'hover:text-white hover:bg-white/5'}`}
+            className={`px-5 py-2 rounded-md transition cursor-pointer ${activeTab === 'OVERDUE' ? 'bg-[#5b5cf0] text-white shadow-[0_4px_18px_rgba(91,92,240,0.4)]' : 'hover:text-white hover:bg-white/5'}`}
           >
             Quá hạn ({tabCounts.OVERDUE})
           </button>
@@ -126,7 +126,7 @@ export default function AdminRequestsPage() {
               {/* TOP ROW */}
               <div className="flex justify-between items-start mb-4 border-b border-white/5 pb-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black text-[#e50914] bg-[#e50914]/10 border border-[#e50914]/20 px-2 py-0.5 rounded">
+                  <span className="text-[10px] font-black text-[#5b5cf0] bg-[#5b5cf0]/10 border border-[#5b5cf0]/20 px-2 py-0.5 rounded">
                     #YC-{r.id}
                   </span>
                   <div className="text-white font-bold text-base">
@@ -193,7 +193,7 @@ export default function AdminRequestsPage() {
                     </button>
                     <button 
                       onClick={() => setApproveModal({ open: true, id: r.id })} 
-                      className="bg-[#e50914] text-white font-bold text-sm px-6 py-2 rounded transition cursor-pointer glow-button"
+                      className="btn-primary font-bold text-sm px-6 py-2 rounded transition cursor-pointer"
                     >
                       Duyệt cấp đồ
                     </button>
@@ -260,7 +260,7 @@ export default function AdminRequestsPage() {
 
       {/* Detail Modal */}
       <Modal
-        title={<span className="text-white font-black flex items-center gap-2"><i className="fa-solid fa-circle-info text-[#e50914]"></i> Chi Tiết Lời Nhắn</span>}
+        title={<span className="text-white font-black flex items-center gap-2"><i className="fa-solid fa-circle-info text-[#5b5cf0]"></i> Chi Tiết Lời Nhắn</span>}
         open={!!detailModal}
         onCancel={() => setDetailModal(null)}
         footer={null}
@@ -291,16 +291,28 @@ export default function AdminRequestsPage() {
         .dark-modal .ant-modal-content {
           background-color: #141414 !important;
           border: 1px solid rgba(255,255,255,0.1) !important;
+          border-radius: 12px !important;
+          overflow: hidden;
         }
         .dark-modal .ant-modal-header {
           background-color: transparent !important;
           border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+          padding: 20px 24px !important;
+        }
+        .dark-modal .ant-modal-body {
+          padding: 24px !important;
+        }
+        .dark-modal .ant-modal-footer {
+          padding: 16px 24px 24px !important;
+          border-top: none !important;
         }
         .dark-modal .ant-modal-title {
           color: #fff !important;
         }
         .dark-modal .ant-modal-close {
           color: #9ca3af !important;
+          top: 18px !important;
+          inset-inline-end: 24px !important;
         }
         .dark-modal .ant-btn {
           background: rgba(255,255,255,0.05);
@@ -308,15 +320,33 @@ export default function AdminRequestsPage() {
           color: #fff;
         }
         .dark-modal .ant-btn-primary {
-          background: #e50914;
-          border-color: #e50914;
+          background: #5b5cf0;
+          border-color: #5b5cf0;
         }
-        .dark-confirm-modal .ant-popover-inner {
+        .dark-confirm-modal .ant-modal-content {
           background-color: #141414 !important;
           border: 1px solid rgba(255,255,255,0.1) !important;
+          border-radius: 12px !important;
+          padding: 24px !important;
         }
-        .dark-confirm-modal .ant-popover-message-title {
+        .dark-confirm-modal .ant-modal-confirm-title {
           color: #fff !important;
+          font-weight: 900 !important;
+        }
+        .dark-confirm-modal .ant-modal-confirm-content {
+          color: #9ca3af !important;
+          margin-top: 8px !important;
+        }
+        .dark-confirm-modal .ant-btn {
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.1);
+          color: #fff;
+          font-weight: bold;
+          border-radius: 6px;
+        }
+        .dark-confirm-modal .ant-btn-primary {
+          background: #5b5cf0 !important;
+          border-color: #5b5cf0 !important;
         }
       `}</style>
     </div>

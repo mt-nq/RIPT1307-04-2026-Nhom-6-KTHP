@@ -153,7 +153,7 @@ export default function AdminEquipmentPage() {
             </h2>
             <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Dữ liệu tổng lượng máy móc lưu trữ trong hệ thống CLB.</p>
           </div>
-          <button onClick={openAdd} className="glow-button bg-[#e50914] hover:bg-[#b1060f] text-white px-5 py-2.5 rounded-lg text-xs font-black transition cursor-pointer flex items-center gap-2">
+          <button onClick={openAdd} className="btn-primary px-5 py-2.5 rounded-lg text-xs font-black flex items-center gap-2">
             <i className="fa-solid fa-plus"></i> THÊM THIẾT BỊ MỚI
           </button>
         </div>
@@ -165,7 +165,7 @@ export default function AdminEquipmentPage() {
             columns={columns}
             dataSource={equipment}
             rowKey="id"
-            pagination={{ pageSize: 10 }}
+            pagination={{ pageSize: 10, hideOnSinglePage: true }}
             scroll={{ x: 800 }}
             className="dark-theme-table"
           />
@@ -202,7 +202,7 @@ export default function AdminEquipmentPage() {
           
           <div className="flex justify-end gap-3 mt-6 border-t border-white/5 pt-4">
             <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2 rounded bg-white/5 hover:bg-white/10 text-gray-300 font-bold transition cursor-pointer">Huỷ</button>
-            <button type="submit" className="glow-button px-6 py-2 rounded bg-[#e50914] text-white font-black transition cursor-pointer">
+            <button type="submit" className="btn-primary px-6 py-2 rounded text-white font-black">
               {editingId ? 'CẬP NHẬT' : 'THÊM MỚI'}
             </button>
           </div>
@@ -240,7 +240,7 @@ export default function AdminEquipmentPage() {
                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">Khả dụng</div>
               </div>
               <div className="bg-[#1a1a1a] rounded-lg p-3 border border-white/5">
-                <div className="text-2xl font-black text-[#e50914]">{detailItem.totalQuantity - detailItem.availableQuantity}</div>
+                <div className="text-2xl font-black text-[#5b5cf0]">{detailItem.totalQuantity - detailItem.availableQuantity}</div>
                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-1">Đang mượn</div>
               </div>
             </div>
@@ -256,23 +256,53 @@ export default function AdminEquipmentPage() {
         .dark-modal .ant-modal-content {
           background-color: #141414 !important;
           border: 1px solid rgba(255,255,255,0.1) !important;
+          border-radius: 12px !important;
+          overflow: hidden;
         }
         .dark-modal .ant-modal-header {
           background-color: transparent !important;
           border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+          padding: 20px 24px !important;
+        }
+        .dark-modal .ant-modal-body {
+          padding: 24px !important;
+        }
+        .dark-modal .ant-modal-footer {
+          padding: 16px 24px 24px !important;
+          border-top: none !important;
         }
         .dark-modal .ant-modal-title {
           color: #fff !important;
         }
         .dark-modal .ant-modal-close {
           color: #9ca3af !important;
+          top: 18px !important;
+          inset-inline-end: 24px !important;
         }
-        .dark-confirm-modal .ant-popover-inner {
+        .dark-confirm-modal .ant-modal-content {
           background-color: #141414 !important;
           border: 1px solid rgba(255,255,255,0.1) !important;
+          border-radius: 12px !important;
+          padding: 24px !important;
         }
-        .dark-confirm-modal .ant-popover-message-title {
+        .dark-confirm-modal .ant-modal-confirm-title {
           color: #fff !important;
+          font-weight: 900 !important;
+        }
+        .dark-confirm-modal .ant-modal-confirm-content {
+          color: #9ca3af !important;
+          margin-top: 8px !important;
+        }
+        .dark-confirm-modal .ant-btn {
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.1);
+          color: #fff;
+          font-weight: bold;
+          border-radius: 6px;
+        }
+        .dark-confirm-modal .ant-btn-primary {
+          background: #5b5cf0 !important;
+          border-color: #5b5cf0 !important;
         }
       `}</style>
     </div>

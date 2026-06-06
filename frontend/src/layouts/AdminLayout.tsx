@@ -1,24 +1,22 @@
-import { Layout, Menu, Dropdown, Avatar } from 'antd';
+import { Layout, Menu, Dropdown, Avatar, Popover, List, Spin } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  DashboardOutlined,
-  FileTextOutlined,
-  InboxOutlined,
-  BarChartOutlined,
-  LogoutOutlined,
-  UserOutlined,
+  DashboardOutlined, FileTextOutlined, InboxOutlined,
+  BarChartOutlined, LogoutOutlined, UserOutlined, ClockCircleFilled,
 } from '@ant-design/icons';
 import { logout } from '@/store/slices/authSlice';
 import { RootState } from '@/store';
+import { useGetAllBorrowsQuery } from '@/store/api/borrowApi';
+import dayjs from 'dayjs';
 
 const { Sider, Content } = Layout;
 
 const menuItems = [
   { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Tổng quan' },
-  { key: '/admin/requests', icon: <FileTextOutlined />, label: 'Quản lý yêu cầu' },
-  { key: '/admin/equipment', icon: <InboxOutlined />, label: 'Quản lý kho' },
-  { key: '/admin/statistics', icon: <BarChartOutlined />, label: 'Thống kê' },
+  { key: '/admin/requests',  icon: <FileTextOutlined />,  label: 'Quản lý yêu cầu' },
+  { key: '/admin/equipment', icon: <InboxOutlined />,     label: 'Quản lý kho' },
+  { key: '/admin/statistics',icon: <BarChartOutlined />,  label: 'Thống kê' },
 ];
 
 export default function AdminLayout() {
@@ -26,115 +24,132 @@ export default function AdminLayout() {
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
+  const { data: borrowsRes, isLoading: isBorrowsLoading } = useGetAllBorrowsQuery();
+  const pendingBorrows = borrowsRes?.data?.filter(b => b.status === 'PENDING') || [];
+  const pendingCount = pendingBorrows.length;
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
-  };
+  const notifContent = (
+    <div style={{ width: 320, maxHeight: 400, overflowY: 'auto' }} className="netflix-scroll">
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontWeight: 800, color: '#fff', fontSize: 13 }}>Yêu cầu chờ duyệt</span>
+        {pendingCount > 0 && <span style={{ fontSize: 11, color: '#5b5cf0', fontWeight: 700 }}>{pendingCount} đang chờ</span>}
+      </div>
+      {isBorrowsLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spin size="small" /></div>
+      ) : pendingCount === 0 ? (
+        <div style={{ textAlign: 'center', padding: '32px 16px', color: '#4b5563', fontSize: 12 }}>Không có yêu cầu nào đang chờ duyệt</div>
+      ) : (
+        <List dataSource={pendingBorrows} renderItem={item => (
+          <List.Item
+            onClick={() => navigate('/admin/requests')}
+            style={{ padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'flex-start', gap: 10, transition: 'background 0.2s' }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'rgba(91, 92, 240,0.07)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+          >
+            <ClockCircleFilled style={{ color: '#f59e0b', fontSize: 15, marginTop: 2, flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }}>Yêu cầu từ {item.userName}</div>
+              <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>{item.quantity}x {item.equipmentName} ({item.userStudentId || 'N/A'})</div>
+              <div style={{ fontSize: 10, color: '#4b5563', marginTop: 4 }}>{dayjs(item.createdAt).format('HH:mm DD/MM/YYYY')}</div>
+            </div>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#5b5cf0', flexShrink: 0, marginTop: 4 }} />
+          </List.Item>
+        )} />
+      )}
+    </div>
+  );
+
+  const handleLogout = () => { dispatch(logout()); navigate('/login'); };
 
   const userMenu = {
     items: [
-      {
-        key: 'info',
-        icon: <UserOutlined style={{ color: '#fff' }} />,
-        label: <div className="font-bold text-white">{user?.name}</div>,
-      },
-      { type: 'divider' as const, style: { borderColor: 'rgba(255,255,255,0.1)' } },
-      { key: 'logout', icon: <LogoutOutlined className="text-red-500" />, label: <span className="text-red-500 font-bold">Đăng xuất</span>, onClick: handleLogout },
+      { key: 'info', icon: <UserOutlined style={{ color: '#6b7280' }} />, label: <div style={{ fontWeight: 700, color: '#fff', fontSize: 13 }}>{user?.name}</div> },
+      { type: 'divider' as const, style: { borderColor: 'rgba(255,255,255,0.08)' } },
+      { key: 'logout', icon: <LogoutOutlined style={{ color: '#ef4444' }} />, label: <span style={{ color: '#ef4444', fontWeight: 700, fontSize: 13 }}>Đăng xuất</span>, onClick: handleLogout },
     ],
   };
 
+  const currentLabel = menuItems.find(m => m.key === location.pathname)?.label || 'Admin';
+
   return (
-    <Layout className="min-h-screen bg-[#0c0c0c]">
-      <Sider 
-        width={260} 
-        breakpoint="lg" 
-        collapsedWidth={0}
-        style={{ background: '#121212', borderRight: '1px solid rgba(255,255,255,0.05)' }}
-      >
-        <div className="flex items-center gap-4 px-6 py-8 border-b border-white/5">
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[#e50914] shadow-[0_0_15px_rgba(229,9,20,0.5)]">
-            <img
-              src="https://tse3.mm.bing.net/th/id/OIP.RjZcMPjW1gO4lp8xOM66IgHaHa?cb=thfvnextfalcon&rs=1&pid=ImgDetMain&o=7&rm=3"
-              alt="Logo"
-              className="w-full h-full object-cover"
-            />
+    <Layout style={{ minHeight: '100vh', background: '#141414' }}>
+      {/* ── Sidebar ── */}
+      <Sider width={240} breakpoint="lg" collapsedWidth={0}
+        style={{ background: '#0f0f0f', borderRight: '1px solid rgba(255,255,255,0.06)', position: 'fixed', top: 0, bottom: 0, left: 0, zIndex: 100 }}>
+
+        {/* Logo */}
+        <div style={{ padding: '20px 20px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: 'linear-gradient(135deg,#5b5cf0,#4338ca)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 12px rgba(91, 92, 240,0.4)', flexShrink: 0 }}>
+            <i className="fa-solid fa-boxes-stacked" style={{ color: '#fff', fontSize: 15 }} />
           </div>
           <div>
-            <h2 className="text-[#e50914] text-xl font-black tracking-tight m-0" style={{ textShadow: '0 2px 10px rgba(229,9,20,0.3)' }}>GEARFLIX</h2>
-            <p className="text-xs text-gray-500 font-bold uppercase tracking-wider m-0 mt-1">Admin Panel</p>
+            <div style={{ fontSize: 14, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-0.3px' }}>CLB BORROW</div>
+            <div style={{ fontSize: 10, color: '#4b5563', fontWeight: 600, marginTop: 2 }}>Admin Dashboard</div>
           </div>
         </div>
-        
+
+        {/* Nav */}
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
           items={menuItems}
           onClick={({ key }) => navigate(key)}
-          style={{ 
-            background: 'transparent', 
-            border: 'none', 
-            marginTop: 16, 
-            padding: '0 12px' 
-          }}
-          className="admin-dark-menu"
+          style={{ background: 'transparent', border: 'none', marginTop: 10 }}
+          className="admin-netflix-menu"
         />
-        
-        <style>{`
-          .admin-dark-menu .ant-menu-item {
-            color: #9ca3af !important;
-            border-radius: 8px !important;
-            margin-bottom: 8px !important;
-            transition: all 0.3s;
-          }
-          .admin-dark-menu .ant-menu-item:hover {
-            color: #fff !important;
-            background-color: rgba(255,255,255,0.05) !important;
-          }
-          .admin-dark-menu .ant-menu-item-selected {
-            color: #fff !important;
-            background-color: rgba(229,9,20,0.15) !important;
-            border-left: 4px solid #e50914 !important;
-          }
-        `}</style>
+
+        {/* Bottom user info removed per user request */}
       </Sider>
 
-      <Layout className="bg-[#0c0c0c]">
-        {/* Glassmorphism Header */}
-        <div className="bg-[#0c0c0c]/80 backdrop-blur-xl px-8 py-4 flex justify-between items-center sticky top-0 z-40 border-b border-white/5">
-          <div className="flex items-center gap-4">
-            <div className="text-white text-lg font-black tracking-wide">TRUNG TÂM QUẢN TRỊ</div>
+      {/* ── Main ── */}
+      <Layout style={{ marginLeft: 240, background: '#141414' }}>
+        {/* Header */}
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 50,
+          height: 60, padding: '0 28px',
+          background: 'rgba(15,15,15,0.97)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+            {currentLabel}
           </div>
-          
-          <div className="flex items-center gap-6">
-            <div className="relative text-gray-400 hover:text-white cursor-pointer transition">
-              <i className="fa-solid fa-bell text-lg"></i>
-              <span className="absolute -top-1.5 -right-1.5 bg-[#e50914] text-white text-[9px] font-bold px-1.5 rounded-full animate-pulse">
-                3
-              </span>
-            </div>
 
-            <div className="flex items-center gap-2 border-l border-white/10 pl-4">
-              <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']} dropdownRender={(menu) => (
-                <div className="bg-[#141414] border border-white/10 rounded-lg shadow-xl min-w-[150px]">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            {/* Bell */}
+            <Popover content={notifContent} title={null} trigger="click" placement="bottomRight" overlayClassName="netflix-notif-popover">
+              <div style={{ position: 'relative', cursor: 'pointer', color: '#6b7280', transition: 'color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#e5e7eb')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}>
+                <i className="fa-solid fa-bell" style={{ fontSize: 17 }} />
+                {pendingCount > 0 && (
+                  <span style={{ position: 'absolute', top: -6, right: -6, background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 800, padding: '1px 5px', borderRadius: 10, lineHeight: 1.5 }}>
+                    {pendingCount}
+                  </span>
+                )}
+              </div>
+            </Popover>
+
+            {/* Avatar dropdown */}
+            <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}
+              dropdownRender={menu => (
+                <div style={{ background: '#1e1e1e', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, minWidth: 160, boxShadow: '0 16px 40px rgba(0,0,0,0.8)' }}>
                   {menu}
                 </div>
               )}>
-                <div className="flex items-center gap-3 cursor-pointer group">
-                  <div className="text-right hidden sm:block">
-                    <div className="text-sm font-bold text-gray-200 group-hover:text-white transition">{user?.name}</div>
-                    <div className="text-[10px] font-bold text-[#e50914] uppercase tracking-wider">Quản Trị Viên</div>
-                  </div>
-                  <Avatar style={{ background: 'linear-gradient(135deg, #b1060f, #e50914)', border: '2px solid rgba(255,255,255,0.1)' }} className="shadow-lg">
-                    {user?.name?.charAt(0) || 'A'}
-                  </Avatar>
-                </div>
-              </Dropdown>
-            </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <Avatar style={{ background: 'linear-gradient(135deg,#5b5cf0,#4338ca)', borderRadius: 8, fontWeight: 900, fontSize: 14 }} size={32}>
+                  {user?.name?.charAt(0) || 'A'}
+                </Avatar>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#d1d5db' }}>{user?.name}</span>
+                <i className="fa-solid fa-caret-down" style={{ color: '#4b5563', fontSize: 10 }} />
+              </div>
+            </Dropdown>
           </div>
         </div>
 
-        <Content className="p-4 md:p-8 overflow-y-auto netflix-scroll">
+        <Content style={{ padding: 28, overflowY: 'auto' }}>
           <Outlet />
         </Content>
       </Layout>

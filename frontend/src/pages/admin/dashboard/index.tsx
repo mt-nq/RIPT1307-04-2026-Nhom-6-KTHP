@@ -129,7 +129,7 @@ export default function AdminDashboard() {
                       case 'REJECTED': colors = 'bg-gray-500/10 text-gray-400 border-gray-500/20'; break;
                     }
                     return (
-                      <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded uppercase border ${colors}`}>
+                      <span className={`text-[10px] font-extrabold px-2.5 py-2.5 rounded uppercase border ${colors}`}>
                         {BORROW_STATUS_LABELS[s]}
                       </span>
                     );
@@ -165,8 +165,8 @@ export default function AdminDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-gray-200 text-sm truncate">{item.equipmentName}</div>
                     </div>
-                    <div className="bg-[#e50914]/20 text-[#e50914] border border-[#e50914]/30 text-[10px] font-black px-2 py-0.5 rounded uppercase">
-                      {item.borrowCount} lượt
+                    <div className="bg-[#e50914]/20 text-[#e50914] border border-[#e50914]/30 text-[10px] font-black px-3 py-0.5 rounded uppercase">
+                      {item.borrowCount}  lượt
                     </div>
                   </div>
                 ))}
