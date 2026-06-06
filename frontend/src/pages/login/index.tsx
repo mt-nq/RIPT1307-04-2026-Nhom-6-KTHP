@@ -19,9 +19,22 @@ export default function LoginPage() {
     try {
       const res = await login(values).unwrap();
       if (res.success) {
+        const isTryingToLoginAsAdmin = activeRole === 'admin';
+        const isUserAdmin = res.data.role === 'ADMIN';
+
+        if (isTryingToLoginAsAdmin && !isUserAdmin) {
+          message.error('Tài khoản này không có quyền Quản Trị Viên!');
+          return;
+        }
+        
+        if (!isTryingToLoginAsAdmin && isUserAdmin) {
+          message.error('Tài khoản Quản Trị Viên vui lòng đăng nhập ở cổng Quản Trị!');
+          return;
+        }
+
         dispatch(loginSuccess({ token: res.data.token, user: res.data }));
         message.success(`Chào mừng, ${res.data.name}! 🎉`);
-        if (res.data.role === 'ADMIN') {
+        if (isUserAdmin) {
           navigate('/admin/dashboard');
         } else {
           navigate('/student/equipment');
