@@ -10,6 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 public class ClubBorrowApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ClubBorrowApplication.class, args);
+        org.springframework.boot.SpringApplication.run(ClubBorrowApplication.class, args);
     }
 }

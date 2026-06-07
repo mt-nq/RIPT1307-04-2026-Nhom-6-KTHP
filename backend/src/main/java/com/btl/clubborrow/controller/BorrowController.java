@@ -50,6 +50,15 @@ public class BorrowController {
                 .body(ApiResponse.success("Gửi yêu cầu mượn thành công", borrowService.createRequest(request, user.getId())));
     }
 
+    // Sinh viên: hủy yêu cầu mượn (khi đang chờ duyệt)
+    @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('STUDENT')")
+    public ResponseEntity<ApiResponse<BorrowResponse>> cancel(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(ApiResponse.success("Hủy yêu cầu thành công", borrowService.cancelBorrowRequest(id, user.getId())));
+    }
+
     // Sinh viên: gia hạn mượn thiết bị
     @PostMapping("/{id}/extend")
     @PreAuthorize("hasRole('STUDENT')")
