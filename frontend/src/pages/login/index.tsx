@@ -19,6 +19,12 @@ export default function LoginPage() {
     try {
       const res = await login(values).unwrap();
       if (res.success) {
+        const expectedRole = activeRole === 'admin' ? 'ADMIN' : 'STUDENT';
+        if (res.data.role !== expectedRole) {
+          message.error(`Tài khoản này không có quyền đăng nhập vào cổng ${activeRole === 'admin' ? 'Quản trị' : 'Sinh viên'}`);
+          return;
+        }
+
         dispatch(loginSuccess({ token: res.data.token, user: res.data }));
         message.success(`Chào mừng, ${res.data.name}! 🎉`);
         navigate(res.data.role === 'ADMIN' ? '/admin/dashboard' : '/student/equipment');
@@ -212,7 +218,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '16px', color: '#374151', fontSize: 12 }}>
-        CLB Borrow Management System © 2025
+        CLB Borrow Management System © 2026
       </div>
     </div>
   );

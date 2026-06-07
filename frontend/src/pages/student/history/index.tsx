@@ -1,6 +1,6 @@
-import { Table, Select, Empty, Spin, Button, Modal, DatePicker, message } from 'antd';
+import { Table, Select, Empty, Spin, Button, Modal, DatePicker, message, Input } from 'antd';
 import { useState } from 'react';
-import { useGetMyBorrowsQuery, useExtendBorrowMutation } from '@/store/api/borrowApi';
+import { useGetMyBorrowsQuery, useExtendBorrowMutation, useCancelBorrowMutation } from '@/store/api/borrowApi';
 import { BorrowResponse, BorrowStatus } from '@/types';
 import { BORROW_STATUS_LABELS } from '@/utils/constants';
 import dayjs from 'dayjs';
@@ -11,19 +11,39 @@ const STATUS_STYLE: Record<BorrowStatus, { bg: string; border: string; color: st
   RETURNED: { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.25)', color: '#34d399', dot: '#10b981' },
   OVERDUE:  { bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.25)',  color: '#f87171', dot: '#ef4444' },
   REJECTED: { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', color: '#6b7280', dot: '#4b5563' },
+  CANCELED: { bg: 'rgba(255,255,255,0.05)', border: 'rgba(255,255,255,0.1)', color: '#9ca3af', dot: '#6b7280' },
 };
 
 export default function HistoryPage() {
   const [statusFilter, setStatusFilter] = useState<BorrowStatus | 'ALL'>('ALL');
+  const [searchText, setSearchText] = useState('');
+  const [dateRange, setDateRange] = useState<any>(null);
+  
   const [extendModalVisible, setExtendModalVisible] = useState(false);
   const [extendRecord, setExtendRecord] = useState<BorrowResponse | null>(null);
   const [extendToDate, setExtendToDate] = useState<dayjs.Dayjs | null>(null);
+  const [contactModalVisible, setContactModalVisible] = useState(false);
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [cancelRecord, setCancelRecord] = useState<BorrowResponse | null>(null);
 
   const { data, isLoading } = useGetMyBorrowsQuery();
   const [extendBorrow, { isLoading: isExtending }] = useExtendBorrowMutation();
+  const [cancelBorrow, { isLoading: isCanceling }] = useCancelBorrowMutation();
 
   const allBorrows = data?.data || [];
-  const filtered = statusFilter === 'ALL' ? allBorrows : allBorrows.filter(b => b.status === statusFilter);
+  
+  const filtered = allBorrows.filter(b => {
+    const effectiveStatus = (b.status === 'REJECTED' && b.adminNote === 'Sinh viên tự hủy') ? 'CANCELED' : b.status;
+    if (statusFilter !== 'ALL' && effectiveStatus !== statusFilter) return false;
+    if (searchText && !b.equipmentName.toLowerCase().includes(searchText.toLowerCase())) return false;
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      const bDate = dayjs(b.borrowDate).startOf('day');
+      const start = dateRange[0].startOf('day');
+      const end = dateRange[1].endOf('day');
+      if (bDate.isBefore(start) || bDate.isAfter(end)) return false;
+    }
+    return true;
+  });
 
   const handleExtend = async () => {
     if (!extendRecord || !extendToDate) return;
@@ -43,13 +63,26 @@ export default function HistoryPage() {
     }
   };
 
+  const handleCancelRequest = async () => {
+    if (!cancelRecord) return;
+    try {
+      await cancelBorrow(cancelRecord.id).unwrap();
+      message.success('Đã hủy yêu cầu mượn thành công');
+      setCancelModalVisible(false);
+      setCancelRecord(null);
+    } catch (error: any) {
+      message.error(error.data?.message || 'Có lỗi xảy ra khi hủy yêu cầu');
+    }
+  };
+
   const stats = [
     { label: 'Tổng Phiếu',  value: allBorrows.length,                                      color: '#e5e7eb', accent: '#e50914' },
     { label: 'Chờ Duyệt',   value: allBorrows.filter(b => b.status === 'PENDING').length,  color: '#fbbf24', accent: '#f59e0b' },
     { label: 'Đang Mượn',   value: allBorrows.filter(b => b.status === 'APPROVED').length, color: '#60a5fa', accent: '#3b82f6' },
     { label: 'Đã Trả',      value: allBorrows.filter(b => b.status === 'RETURNED').length, color: '#34d399', accent: '#10b981' },
     { label: 'Quá Hạn',     value: allBorrows.filter(b => b.status === 'OVERDUE').length,  color: '#f87171', accent: '#ef4444' },
-    { label: 'Bị Từ Chối',  value: allBorrows.filter(b => b.status === 'REJECTED').length, color: '#6b7280', accent: '#4b5563' },
+    { label: 'Bị Từ Chối',  value: allBorrows.filter(b => b.status === 'REJECTED' && b.adminNote !== 'Sinh viên tự hủy').length, color: '#6b7280', accent: '#4b5563' },
+    { label: 'Đã Hủy',      value: allBorrows.filter(b => b.status === 'REJECTED' && b.adminNote === 'Sinh viên tự hủy').length, color: '#9ca3af', accent: '#6b7280' },
   ];
 
   const columns = [
@@ -98,8 +131,9 @@ export default function HistoryPage() {
     },
     {
       title: 'Trạng thái', dataIndex: 'status', key: 'status',
-      render: (status: BorrowStatus) => {
-        const s = STATUS_STYLE[status];
+      render: (status: BorrowStatus, record: BorrowResponse) => {
+        const effectiveStatus = (status === 'REJECTED' && record.adminNote === 'Sinh viên tự hủy') ? 'CANCELED' : status;
+        const s = STATUS_STYLE[effectiveStatus as BorrowStatus];
         return (
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -108,8 +142,8 @@ export default function HistoryPage() {
             textTransform: 'uppercase', letterSpacing: '0.07em',
             padding: '4px 10px', borderRadius: 3,
           }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.dot, flexShrink: 0, ...(status === 'PENDING' ? { animation: 'pulse 1.5s infinite' } : {}) }} />
-            {BORROW_STATUS_LABELS[status]}
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.dot, flexShrink: 0, ...(effectiveStatus === 'PENDING' ? { animation: 'pulse 1.5s infinite' } : {}) }} />
+            {BORROW_STATUS_LABELS[effectiveStatus]}
           </span>
         );
       },
@@ -122,35 +156,84 @@ export default function HistoryPage() {
         const daysToReturn = dayjs(record.returnDate).endOf('day').diff(dayjs(), 'day');
         const canExtend = record.status === 'APPROVED' && !record.isExtended && daysToReturn <= 3 && daysToReturn >= 0;
 
-        if (canExtend) {
-          return (
-            <Button 
-              size="small" 
-              onClick={() => {
-                setExtendRecord(record);
-                setExtendToDate(dayjs(record.returnDate).add(7, 'day'));
-                setExtendModalVisible(true);
-              }}
-              style={{ 
-                fontSize: 11, 
-                fontWeight: 600, 
-                background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(37,99,235,0.25) 100%)',
-                color: '#60a5fa', 
-                border: '1px solid rgba(59,130,246,0.3)',
-                borderRadius: 4, 
-                padding: '0 12px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-              }}
-            >
-              <i className="fa-solid fa-calendar-plus" style={{ fontSize: 10 }} />
-              Gia hạn
-            </Button>
-          );
-        }
-        return null;
+        return (
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            {canExtend && (
+              <Button 
+                size="small" 
+                onClick={() => {
+                  setExtendRecord(record);
+                  setExtendToDate(dayjs(record.returnDate).add(7, 'day'));
+                  setExtendModalVisible(true);
+                }}
+                style={{ 
+                  fontSize: 11, 
+                  fontWeight: 600, 
+                  background: 'linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(37,99,235,0.25) 100%)',
+                  color: '#60a5fa', 
+                  border: '1px solid rgba(59,130,246,0.3)',
+                  borderRadius: 4, 
+                  padding: '0 12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }}
+              >
+                <i className="fa-solid fa-calendar-plus" style={{ fontSize: 10 }} />
+                Gia hạn
+              </Button>
+            )}
+
+            {record.status === 'PENDING' && (
+              <Button
+                size="small"
+                danger
+                onClick={() => {
+                  setCancelRecord(record);
+                  setCancelModalVisible(true);
+                }}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  background: 'transparent',
+                  color: '#ef4444',
+                  border: '1px solid rgba(239,68,68,0.5)',
+                  borderRadius: 4,
+                  padding: '0 12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <i className="fa-solid fa-xmark" style={{ fontSize: 10 }} />
+                Hủy yêu cầu
+              </Button>
+            )}
+
+            {record.status === 'OVERDUE' && (
+              <Button
+                size="small"
+                onClick={() => setContactModalVisible(true)}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  background: 'rgba(245,158,11,0.1)',
+                  color: '#fbbf24',
+                  border: '1px solid rgba(245,158,11,0.3)',
+                  borderRadius: 4,
+                  padding: '0 12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6
+                }}
+              >
+                <i className="fa-solid fa-circle-exclamation" style={{ fontSize: 10 }} />
+                Liên hệ Admin
+              </Button>
+            )}
+          </div>
+        );
       },
     },
     {
@@ -183,20 +266,37 @@ export default function HistoryPage() {
               Theo dõi tiến trình và trạng thái các yêu cầu mượn thiết bị.
             </p>
           </div>
-          <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ width: 200 }}
-            size="large"
-            options={[
-              { value: 'ALL', label: 'Tất cả trạng thái' },
-              ...Object.entries(BORROW_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-            ]}
-          />
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Input
+              placeholder="Tìm thiết bị..."
+              prefix={<i className="fa-solid fa-magnifying-glass" style={{ color: '#6b7280', fontSize: 13 }} />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 200, background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.08)', color: '#fff' }}
+              allowClear
+            />
+            <DatePicker.RangePicker
+              format="DD/MM/YYYY"
+              value={dateRange}
+              onChange={(dates) => setDateRange(dates)}
+              style={{ width: 260, background: '#1a1a1a', borderColor: 'rgba(255,255,255,0.08)', color: '#fff' }}
+              placeholder={['Từ ngày', 'Đến ngày']}
+              allowClear
+            />
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 170 }}
+              options={[
+                { value: 'ALL', label: 'Tất cả trạng thái' },
+                ...Object.entries(BORROW_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+              ]}
+            />
+          </div>
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 12, marginBottom: 32 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 32 }}>
           {stats.map((s, i) => (
             <div key={i} style={{
               background: '#1a1a1a', borderRadius: 6,
@@ -318,6 +418,125 @@ export default function HistoryPage() {
             </div>
           </div>
         )}
+      </Modal>
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(245,158,11,0.2)' }}>
+              <i className="fa-solid fa-triangle-exclamation" style={{ color: '#fbbf24', fontSize: 16 }} />
+            </div>
+            <span style={{ color: '#fff', fontSize: 18, fontWeight: 700, letterSpacing: '-0.3px' }}>Chi tiết phạt & Liên hệ</span>
+          </div>
+        }
+        open={contactModalVisible}
+        width={500}
+        onOk={() => setContactModalVisible(false)}
+        onCancel={() => setContactModalVisible(false)}
+        footer={
+          <Button 
+            onClick={() => setContactModalVisible(false)}
+            style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', borderRadius: 6, fontWeight: 600, border: 'none', padding: '0 24px', height: 40, color: '#fff' }}
+          >
+            Đã hiểu
+          </Button>
+        }
+        styles={{
+          content: { background: '#141414', border: '1px solid #333', borderRadius: 12, padding: 0, overflow: 'hidden' },
+          header: { background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px 16px', margin: 0 },
+          body: { padding: '24px' },
+          footer: { borderTop: '1px solid rgba(255,255,255,0.06)', padding: '16px 24px 20px', margin: 0, textAlign: 'right' }
+        }}
+      >
+        <div style={{ color: '#d1d5db', fontSize: 14, lineHeight: 1.6 }}>
+          <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.1)', padding: 16, borderRadius: 8, marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <i className="fa-solid fa-circle-exclamation" style={{ color: '#ef4444', marginTop: 4 }} />
+              <div>
+                <div style={{ color: '#f87171', fontWeight: 600, marginBottom: 4 }}>Thiết bị của bạn đã quá hạn trả!</div>
+                <div style={{ color: '#9ca3af', fontSize: 13 }}>Vui lòng mang thiết bị đến phòng quản lý sớm nhất có thể để tránh phát sinh thêm phí phạt. Mức phạt sẽ tăng lên theo mỗi ngày trễ hạn.</div>
+              </div>
+            </div>
+          </div>
+          
+          <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 16, border: '1px solid rgba(255,255,255,0.04)' }}>
+            <div style={{ color: '#fff', fontWeight: 600, marginBottom: 12, fontSize: 15 }}>Thông tin liên hệ Admin</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="fa-solid fa-envelope" style={{ color: '#9ca3af' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: '#6b7280' }}>Email hỗ trợ</div>
+                <div style={{ color: '#60a5fa', fontWeight: 500 }}>admin@school.edu.vn</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="fa-solid fa-phone" style={{ color: '#9ca3af' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 12, color: '#6b7280' }}>Hotline / Zalo</div>
+                <div style={{ color: '#e5e7eb', fontWeight: 500 }}>0123.456.789</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(239,68,68,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(239,68,68,0.2)' }}>
+              <i className="fa-solid fa-trash-can" style={{ color: '#ef4444', fontSize: 16 }} />
+            </div>
+            <span style={{ color: '#fff', fontSize: 18, fontWeight: 700, letterSpacing: '-0.3px' }}>Xác nhận hủy yêu cầu</span>
+          </div>
+        }
+        open={cancelModalVisible}
+        width={450}
+        onOk={handleCancelRequest}
+        onCancel={() => {
+          setCancelModalVisible(false);
+          setCancelRecord(null);
+        }}
+        confirmLoading={isCanceling}
+        okText="Có, hủy yêu cầu"
+        cancelText="Không, giữ lại"
+        okButtonProps={{ danger: true, style: { borderRadius: 6, fontWeight: 600, padding: '0 20px', height: 38 } }}
+        cancelButtonProps={{ style: { background: 'transparent', color: '#9ca3af', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, fontWeight: 600, height: 38 } }}
+        styles={{
+          content: { background: '#141414', border: '1px solid #333', borderRadius: 12, padding: 0, overflow: 'hidden' },
+          header: { background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '20px 24px 16px', margin: 0 },
+          body: { padding: '24px' },
+          footer: { borderTop: '1px solid rgba(255,255,255,0.06)', padding: '16px 24px 20px', margin: 0 }
+        }}
+      >
+        <div style={{ color: '#d1d5db', fontSize: 14, lineHeight: 1.6 }}>
+          <p style={{ marginBottom: 16 }}>Bạn có chắc chắn muốn hủy yêu cầu mượn thiết bị này không?</p>
+          
+          {cancelRecord && (
+            <div style={{ background: '#1a1a1a', borderRadius: 8, padding: 12, border: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: 12 }}>
+              {cancelRecord.equipmentImageUrl ? (
+                <img src={cancelRecord.equipmentImageUrl} alt="equipment" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4, border: '1px solid rgba(255,255,255,0.08)' }} />
+              ) : (
+                <div style={{ width: 48, height: 48, background: '#222', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <i className="fa-solid fa-box" style={{ color: '#555', fontSize: 18 }} />
+                </div>
+              )}
+              <div>
+                <div style={{ color: '#fff', fontSize: 14, fontWeight: 600, marginBottom: 2 }}>{cancelRecord.equipmentName}</div>
+                <div style={{ fontSize: 12, color: '#6b7280' }}>Số lượng: {cancelRecord.quantity} chiếc</div>
+              </div>
+            </div>
+          )}
+          
+          <div style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.1)', padding: 12, borderRadius: 8, marginTop: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <i className="fa-solid fa-circle-info" style={{ color: '#f87171', marginTop: 3, fontSize: 12 }} />
+              <div style={{ color: '#f87171', fontSize: 13 }}>
+                Lưu ý: Hành động này không thể hoàn tác. Nếu muốn mượn lại, bạn sẽ phải tạo một yêu cầu mới.
+              </div>
+            </div>
+          </div>
+        </div>
       </Modal>
     </div>
   );

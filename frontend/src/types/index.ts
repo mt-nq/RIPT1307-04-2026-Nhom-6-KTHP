@@ -50,7 +50,7 @@ export interface EquipmentRequest {
 }
 
 // ===== Borrow =====
-export type BorrowStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'RETURNED' | 'OVERDUE';
+export type BorrowStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'RETURNED' | 'OVERDUE' | 'CANCELED';
 
 export interface BorrowResponse {
   id: number;

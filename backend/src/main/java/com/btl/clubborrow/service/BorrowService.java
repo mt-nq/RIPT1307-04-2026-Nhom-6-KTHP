@@ -68,6 +68,25 @@ public class BorrowService {
     }
 
     @Transactional
+    public BorrowResponse cancelBorrowRequest(Long id, Long userId) {
+        BorrowRequest borrow = getBorrowOrThrow(id);
+
+        if (!borrow.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Bạn không có quyền hủy phiếu mượn này");
+        }
+
+        if (borrow.getStatus() != BorrowStatus.PENDING) {
+            throw new RuntimeException("Chỉ có thể hủy yêu cầu khi đang ở trạng thái chờ duyệt");
+        }
+
+        borrow.setStatus(BorrowStatus.REJECTED);
+        borrow.setAdminNote("Sinh viên tự hủy");
+        borrowRequestRepository.save(borrow);
+
+        return toResponse(borrow);
+    }
+
+    @Transactional
     public BorrowResponse extendBorrowRequest(Long id, Long userId, ExtendBorrowRequest request) {
         BorrowRequest borrow = getBorrowOrThrow(id);
 

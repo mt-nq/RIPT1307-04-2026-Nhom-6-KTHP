@@ -8,6 +8,7 @@ export const BORROW_STATUS_LABELS: Record<string, string> = {
   REJECTED: 'Từ chối',
   RETURNED: 'Đã trả',
   OVERDUE: 'Quá hạn',
+  CANCELED: 'Đã hủy',
 };
 
 export const BORROW_STATUS_COLORS: Record<string, string> = {
@@ -16,6 +17,7 @@ export const BORROW_STATUS_COLORS: Record<string, string> = {
   REJECTED: 'red',
   RETURNED: 'green',
   OVERDUE: 'volcano',
+  CANCELED: 'default',
 };
 
 export const NOTIFICATION_TYPE_ICONS: Record<string, string> = {
