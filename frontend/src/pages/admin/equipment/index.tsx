@@ -97,7 +97,7 @@ export default function AdminEquipmentPage() {
       align: 'center' as const,
       render: (_: unknown, eq: Equipment) => {
         const borrowing = eq.totalQuantity - eq.availableQuantity;
-        return <span className={`font-black text-lg ${borrowing > 0 ? 'text-[#e50914]' : 'text-gray-500'}`}>{borrowing}</span>;
+        return <span className={`font-black text-lg ${borrowing > 0 ? 'text-rose-400' : 'text-gray-600'}`}>{borrowing}</span>;
       },
     },
     {
@@ -107,7 +107,7 @@ export default function AdminEquipmentPage() {
       align: 'center' as const,
       render: (v: number) => {
         return (
-          <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase border ${v > 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+          <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase border ${v > 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'}`}>
             {v} Sẵn có
           </span>
         );
@@ -123,7 +123,7 @@ export default function AdminEquipmentPage() {
           </button>
           {eq.active && (
             <>
-              <button onClick={() => openEdit(eq)} className="w-8 h-8 rounded-full bg-blue-500/10 hover:bg-blue-500 text-blue-500 hover:text-white border border-blue-500/20 flex items-center justify-center transition cursor-pointer">
+              <button onClick={() => openEdit(eq)} className="w-8 h-8 rounded-full bg-white/5 hover:bg-blue-500 text-gray-400 hover:text-white border border-white/10 hover:border-blue-500/50 flex items-center justify-center transition cursor-pointer">
                 <i className="fa-solid fa-pen"></i>
               </button>
               <Popconfirm
@@ -132,7 +132,7 @@ export default function AdminEquipmentPage() {
                 okText="Xóa" cancelText="Huỷ" 
                 overlayClassName="dark-confirm-modal"
               >
-                <button className="w-8 h-8 rounded-full bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 flex items-center justify-center transition cursor-pointer">
+                <button className="w-8 h-8 rounded-full bg-white/5 hover:bg-red-500 text-gray-400 hover:text-white border border-white/10 hover:border-red-500/50 flex items-center justify-center transition cursor-pointer">
                   <i className="fa-solid fa-trash-can"></i>
                 </button>
               </Popconfirm>

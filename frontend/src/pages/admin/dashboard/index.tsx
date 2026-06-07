@@ -13,29 +13,25 @@ export default function AdminDashboard() {
   const recentBorrows = (borrowsData?.data || []).slice(0, 5);
   const overdueBorrows = (borrowsData?.data || []).filter(b => b.status === 'OVERDUE');
 
-  const statCards = [
+  const statCards: { title: string; value: number; color: string; icon?: string }[] = [
     {
       title: 'TỔNG SỐ THIẾT BỊ',
       value: stats?.totalEquipment || 0,
-      icon: 'fa-boxes-stacked',
       color: 'indigo',
     },
     {
       title: 'THIẾT BỊ ĐANG MƯỢN',
       value: stats?.totalBorrowing || 0,
-      icon: 'fa-hand-holding-hand',
       color: 'blue',
     },
     {
       title: 'THIẾT BỊ CHỜ MƯỢN',
       value: stats?.totalPending || 0,
-      icon: 'fa-hourglass-half',
       color: 'amber',
     },
     {
       title: 'THIẾT BỊ QUÁ HẠN',
       value: stats?.totalOverdue || 0,
-      icon: 'fa-triangle-exclamation',
       color: 'red',
     },
   ];
@@ -43,13 +39,13 @@ export default function AdminDashboard() {
   if (statsLoading) return <div className="h-screen flex items-center justify-center"><Spin size="large" /></div>;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-6 mb-6 gap-4">
+    <div className="max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white/10 pb-6 mb-8 gap-4">
         <div>
-          <h2 className="text-2xl font-black tracking-wide text-white flex items-center gap-3">
-            <i className="fa-solid fa-chart-pie text-[#e50914]"></i> TỔNG QUAN HỆ THỐNG
+          <h2 className="text-xl font-bold tracking-wide text-white flex items-center gap-3">
+            <i className="fa-solid fa-chart-pie text-rose-400"></i> TỔNG QUAN HỆ THỐNG
           </h2>
-          <p className="text-xs text-gray-500 mt-1 uppercase font-bold tracking-wider">Xem nhanh trạng thái hệ thống mượn đồ hiện tại.</p>
+          <p className="text-xs text-gray-500 mt-1 uppercase font-semibold tracking-wider">Xem nhanh trạng thái hệ thống mượn đồ hiện tại.</p>
         </div>
       </div>
 
@@ -60,24 +56,26 @@ export default function AdminDashboard() {
           type="error"
           showIcon
           closable
-          className="bg-red-500/10 border border-red-500/20 text-red-400 font-bold mb-6"
+          className="bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold mb-8"
         />
       )}
 
       {/* STAT CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((card) => {
           let textColors = '';
-          let borderColors = '';
-          if (card.color === 'indigo') { textColors = 'text-indigo-400'; borderColors = 'border-t-indigo-500'; }
-          if (card.color === 'blue') { textColors = 'text-blue-400'; borderColors = 'border-t-blue-500'; }
-          if (card.color === 'amber') { textColors = 'text-amber-400'; borderColors = 'border-t-amber-500'; }
-          if (card.color === 'red') { textColors = 'text-[#e50914]'; borderColors = 'border-t-[#e50914]'; }
+          if (card.color === 'indigo') { textColors = 'text-indigo-400'; }
+          if (card.color === 'blue') { textColors = 'text-blue-400'; }
+          if (card.color === 'amber') { textColors = 'text-amber-400'; }
+          if (card.color === 'red') { textColors = 'text-rose-400'; }
 
           return (
-            <div key={card.title} className={`bg-[#121212] border-t-4 ${borderColors} border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden group hover:bg-[#161616] transition`}>
-              <i className={`fa-solid ${card.icon} absolute -right-4 -bottom-4 text-7xl opacity-5 group-hover:opacity-10 transition duration-500 transform group-hover:scale-110 ${textColors}`}></i>
-              <div className="text-gray-500 text-xs font-bold tracking-widest mb-2">{card.title}</div>
+            <div key={card.title} className="bg-[#121212] border border-white/5 rounded-2xl p-6 shadow-2xl relative overflow-hidden group hover:bg-[#161616] transition">
+              {card.icon && <i className={`fa-solid ${card.icon} absolute -right-4 -bottom-4 text-7xl opacity-5 group-hover:opacity-10 transition duration-500 transform group-hover:scale-110 ${textColors}`}></i>}
+              <div className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                {card.icon && <i className={`fa-solid ${card.icon} ${textColors} opacity-80`}></i>}
+                <span>{card.title}</span>
+              </div>
               <div className={`text-4xl font-black ${textColors}`}>{card.value}</div>
             </div>
           );
@@ -88,13 +86,13 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2">
           <div className="bg-[#121212] border border-white/5 rounded-2xl overflow-hidden shadow-2xl p-6">
             <h3 className="text-white font-black uppercase tracking-wider text-sm mb-6 flex items-center gap-2">
-               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
-               Yêu cầu gần đây
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+              Yêu cầu gần đây
             </h3>
             <Table
               dataSource={recentBorrows}
               rowKey="id"
-              size="small"
+              size="middle"
               pagination={false}
               className="dark-theme-table"
               columns={[
@@ -109,9 +107,9 @@ export default function AdminDashboard() {
                   title: 'Sinh viên',
                   dataIndex: 'userName',
                   render: (name: string, r: BorrowResponse) => (
-                    <div>
-                      <div className="font-bold text-gray-200">{name}</div>
-                      <div className="text-[10px] text-gray-500 font-mono mt-0.5">{r.userStudentId}</div>
+                    <div className="py-1">
+                      <div className="font-bold text-gray-100 text-sm">{name}</div>
+                      <div className="text-[11px] text-gray-500 font-mono mt-0.5">{r.userStudentId}</div>
                     </div>
                   ),
                 },
@@ -121,12 +119,12 @@ export default function AdminDashboard() {
                   dataIndex: 'status',
                   render: (s: BorrowStatus) => {
                     let colors = '';
-                    switch(s) {
+                    switch (s) {
                       case 'PENDING': colors = 'bg-amber-500/10 text-amber-400 border-amber-500/20'; break;
                       case 'APPROVED': colors = 'bg-blue-500/10 text-blue-400 border-blue-500/20'; break;
                       case 'RETURNED': colors = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'; break;
-                      case 'OVERDUE': colors = 'bg-red-500/10 text-red-400 border-red-500/20'; break;
-                      case 'REJECTED': colors = 'bg-gray-500/10 text-gray-400 border-gray-500/20'; break;
+                      case 'OVERDUE': colors = 'bg-rose-500/10 text-rose-400 border-rose-500/20'; break;
+                      case 'REJECTED': colors = 'bg-red-500/10 text-red-400 border-red-500/20'; break;
                     }
                     return (
                       <span className={`text-[10px] font-extrabold px-2.5 py-2.5 rounded uppercase border ${colors}`}>
@@ -148,7 +146,7 @@ export default function AdminDashboard() {
         <div className="lg:col-span-1">
           <div className="bg-[#121212] border border-white/5 rounded-2xl overflow-hidden shadow-2xl p-6 h-full">
             <h3 className="text-white font-black uppercase tracking-wider text-sm mb-6 flex items-center gap-2">
-               <i className="fa-solid fa-trophy text-amber-400"></i> TOP MƯỢN THÁNG NÀY
+              <i className="fa-solid fa-trophy text-amber-400"></i> TOP MƯỢN THÁNG NÀY
             </h3>
             {(stats?.monthlyStats || []).length === 0 ? (
               <div className="text-center py-10">
@@ -165,7 +163,7 @@ export default function AdminDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-gray-200 text-sm truncate">{item.equipmentName}</div>
                     </div>
-                    <div className="bg-[#e50914]/20 text-[#e50914] border border-[#e50914]/30 text-[10px] font-black px-3 py-0.5 rounded uppercase">
+                    <div className="bg-gray-500/10 text-gray-300 border border-gray-500/20 text-[10px] font-black px-3 py-0.5 rounded uppercase">
                       {item.borrowCount}  lượt
                     </div>
                   </div>

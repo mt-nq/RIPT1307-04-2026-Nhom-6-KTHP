@@ -68,13 +68,13 @@ export default function StatisticsPage() {
       title: 'Sinh viên',
       key: 'student',
       render: (_: unknown, r: BorrowResponse) => (
-        <div>
+        <div className="py-1 whitespace-nowrap">
           <div className="font-bold text-gray-200">{r.userName}</div>
-          <div className="text-[10px] text-gray-500 font-mono mt-0.5">{r.userEmail}</div>
+          <div className="text-[9px] text-gray-600 font-mono mt-1">{r.userEmail}</div>
         </div>
       ),
     },
-    { title: 'Thiết bị', dataIndex: 'equipmentName', render: (n: string) => <span className="text-gray-200 font-bold">{n}</span> },
+    { title: 'Thiết bị', dataIndex: 'equipmentName', render: (n: string) => <span className="text-gray-200 font-bold whitespace-nowrap">{n}</span> },
     { title: 'SL', dataIndex: 'quantity', align: 'center' as const, render: (v: number) => <span className="text-white font-black">{v}</span> },
     {
       title: 'Hạn trả',
@@ -82,9 +82,9 @@ export default function StatisticsPage() {
       render: (d: string) => {
         const days = dayjs().diff(dayjs(d), 'day');
         return (
-          <div>
-            <div className="text-red-400 font-bold">{dayjs(d).format('DD/MM/YYYY')}</div>
-            <div className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded uppercase font-black inline-block mt-1">
+          <div className="whitespace-nowrap">
+            <div className="text-gray-300 font-bold">{dayjs(d).format('DD/MM/YYYY')}</div>
+            <div className="text-[10px] bg-red-500/15 text-red-500 border border-red-500/20 px-2 py-0.5 rounded uppercase font-black inline-block mt-1">
               Trễ {days} ngày
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function StatisticsPage() {
             <Empty description={<span className="text-gray-500 font-bold uppercase tracking-wider text-xs">Không có dữ liệu tháng {month}/{year}</span>} />
           </div>
         ) : (
-          <div className="relative w-full h-[400px] flex flex-col pb-8 pt-2">
+          <div className="relative w-full flex flex-col pb-8 pt-2" style={{ height: Math.max(200, chartData.length * 65 + 50) + 'px' }}>
             <div className="absolute top-2 bottom-8 left-[232px] right-[92px] pointer-events-none flex justify-between z-0">
               {ticks.map((tick) => (
                 <div key={tick} className="h-full border-l border-white/10 border-dashed relative">
@@ -191,8 +191,8 @@ export default function StatisticsPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-[#121212] border border-white/5 rounded-2xl overflow-hidden shadow-2xl p-6 h-[540px] flex flex-col">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        <div className="xl:col-span-5 bg-[#121212] border border-white/5 rounded-2xl overflow-hidden shadow-2xl p-6 h-[540px] flex flex-col">
           <h3 className="text-white font-black uppercase tracking-wider text-sm mb-6 flex items-center gap-2">
             <i className="fa-solid fa-list-ol text-emerald-400"></i> CHI TIẾT THÁNG {month}/{year}
           </h3>
@@ -218,13 +218,13 @@ export default function StatisticsPage() {
                     );
                   },
                 },
-                { title: 'Tên thiết bị', dataIndex: 'equipmentName', key: 'equipmentName', render: (n: string) => <span className="font-bold text-gray-200">{n}</span> },
+                { title: 'Tên thiết bị', dataIndex: 'equipmentName', key: 'equipmentName', render: (n: string) => <span className="font-bold text-gray-200 whitespace-nowrap">{n}</span> },
                 {
                   title: 'Số lượng mượn',
                   dataIndex: 'borrowCount',
                   key: 'borrowCount',
                   align: 'center',
-                  render: (v: number) => <span className="bg-[#5b5cf0]/20 text-[#5b5cf0] border border-[#5b5cf0]/30 px-2 py-0.5 rounded font-black text-xs">{v}</span>,
+                  render: (v: number) => <span className="bg-gray-800 text-gray-300 border border-gray-700 px-2 py-0.5 rounded font-black text-xs">{v}</span>,
                 },
               ]}
             />
@@ -233,9 +233,9 @@ export default function StatisticsPage() {
           )}
         </div>
 
-        <div className="bg-[#121212] border border-t-4 border-white/5 border-t-red-500 rounded-2xl overflow-hidden shadow-2xl p-6 h-[540px] flex flex-col">
-          <h3 className="text-red-400 font-black uppercase tracking-wider text-sm mb-6 flex items-center gap-2">
-            <i className="fa-solid fa-skull-crossbones"></i> DANH SÁCH QUÁ HẠN {overdueList.length > 0 && `(${overdueList.length})`}
+        <div className="xl:col-span-7 bg-[#121212] border border-white/5 rounded-2xl overflow-hidden shadow-2xl p-6 h-[540px] flex flex-col">
+          <h3 className="text-white font-black uppercase tracking-wider text-sm mb-6 flex items-center gap-2">
+            <i className="fa-solid fa-clock-rotate-left text-red-500"></i> DANH SÁCH QUÁ HẠN {overdueList.length > 0 && `(${overdueList.length})`}
           </h3>
 
           {overdueLoading ? (
@@ -251,7 +251,7 @@ export default function StatisticsPage() {
               rowKey="id"
               pagination={{ pageSize: 5, hideOnSinglePage: true, current: overduePage, onChange: setOverduePage }}
               size="small"
-              className="dark-theme-table border-red-500"
+              className="dark-theme-table"
             />
           )}
         </div>
